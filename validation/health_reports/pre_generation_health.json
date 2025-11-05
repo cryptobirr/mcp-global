@@ -1,0 +1,541 @@
+{
+  "excel-mcp-server": {
+    "server_id": "excel-mcp-server",
+    "name": "excel-mcp-server",
+    "type": "nodejs",
+    "category": "media",
+    "exists": true,
+    "timestamp": "2025-09-20T17:34:54.240993",
+    "overall_status": "healthy",
+    "checks": {
+      "build": {
+        "server_exists": true,
+        "build_available": true,
+        "main_file_exists": true,
+        "build_path": "/Users/mekonen/.mcp-global/servers/binaries/excel-mcp-server/build",
+        "main_file_path": "/Users/mekonen/.mcp-global/servers/binaries/excel-mcp-server/build/index.js",
+        "package_json_exists": true,
+        "dependencies_installed": true
+      },
+      "environment": {
+        "required_vars": [],
+        "available_vars": {},
+        "missing_vars": [],
+        "all_present": true
+      }
+    }
+  },
+  "time-tracker-mcp-server": {
+    "server_id": "time-tracker-mcp-server",
+    "name": "time-tracker-mcp-server",
+    "type": "nodejs",
+    "category": "uncategorized",
+    "exists": true,
+    "timestamp": "2025-09-20T17:34:54.241082",
+    "overall_status": "healthy",
+    "checks": {
+      "build": {
+        "server_exists": true,
+        "build_available": true,
+        "main_file_exists": true,
+        "build_path": "/Users/mekonen/.mcp-global/servers/binaries/time-tracker-mcp-server/build",
+        "main_file_path": "/Users/mekonen/.mcp-global/servers/binaries/time-tracker-mcp-server/build/index.js",
+        "package_json_exists": true,
+        "dependencies_installed": true
+      },
+      "environment": {
+        "required_vars": [],
+        "available_vars": {},
+        "missing_vars": [],
+        "all_present": true
+      }
+    }
+  },
+  "postgres-mcp-server": {
+    "server_id": "postgres-mcp-server",
+    "name": "postgres-mcp-server",
+    "type": "nodejs",
+    "category": "database",
+    "exists": true,
+    "timestamp": "2025-09-20T17:34:54.241146",
+    "overall_status": "env_missing",
+    "checks": {
+      "build": {
+        "server_exists": true,
+        "build_available": true,
+        "main_file_exists": true,
+        "build_path": "/Users/mekonen/.mcp-global/servers/binaries/postgres-mcp-server/build",
+        "main_file_path": "/Users/mekonen/.mcp-global/servers/binaries/postgres-mcp-server/build/index.js",
+        "package_json_exists": true,
+        "dependencies_installed": true
+      },
+      "environment": {
+        "required_vars": [
+          "DB_USER",
+          "DB_HOST",
+          "DB_NAME",
+          "DB_PASSWORD",
+          "DB_PORT"
+        ],
+        "available_vars": {
+          "DB_USER": false,
+          "DB_HOST": false,
+          "DB_NAME": false,
+          "DB_PASSWORD": true,
+          "DB_PORT": false
+        },
+        "missing_vars": [
+          "DB_USER",
+          "DB_HOST",
+          "DB_NAME",
+          "DB_PORT"
+        ],
+        "all_present": false
+      }
+    }
+  },
+  "mcp-browser-use": {
+    "server_id": "mcp-browser-use",
+    "name": "mcp-browser-use",
+    "type": "python",
+    "category": "automation",
+    "exists": true,
+    "timestamp": "2025-09-20T17:34:54.241208",
+    "overall_status": "build_needed",
+    "checks": {
+      "build": {
+        "server_exists": true,
+        "build_available": false,
+        "main_file_exists": false,
+        "build_path": null,
+        "main_file_path": null,
+        "package_json_exists": false,
+        "dependencies_installed": false
+      },
+      "environment": {
+        "required_vars": [
+          "ANTHROPIC_API_KEY"
+        ],
+        "available_vars": {
+          "ANTHROPIC_API_KEY": true
+        },
+        "missing_vars": [],
+        "all_present": true
+      }
+    }
+  },
+  "dropbox-mcp-server": {
+    "server_id": "dropbox-mcp-server",
+    "name": "dropbox-mcp-server",
+    "type": "nodejs",
+    "category": "uncategorized",
+    "exists": true,
+    "timestamp": "2025-09-20T17:34:54.242133",
+    "overall_status": "healthy",
+    "checks": {
+      "build": {
+        "server_exists": true,
+        "build_available": true,
+        "main_file_exists": true,
+        "build_path": "/Users/mekonen/.mcp-global/servers/binaries/dropbox-mcp-server/build",
+        "main_file_path": "/Users/mekonen/.mcp-global/servers/binaries/dropbox-mcp-server/build/index.js",
+        "package_json_exists": true,
+        "dependencies_installed": true
+      },
+      "environment": {
+        "required_vars": [
+          "DROPBOX_ACCESS_TOKEN"
+        ],
+        "available_vars": {
+          "DROPBOX_ACCESS_TOKEN": true
+        },
+        "missing_vars": [],
+        "all_present": true
+      }
+    }
+  },
+  "pdf-mcp-server": {
+    "server_id": "pdf-mcp-server",
+    "name": "pdf-mcp-server",
+    "type": "nodejs",
+    "category": "media",
+    "exists": true,
+    "timestamp": "2025-09-20T17:34:54.242203",
+    "overall_status": "healthy",
+    "checks": {
+      "build": {
+        "server_exists": true,
+        "build_available": true,
+        "main_file_exists": true,
+        "build_path": "/Users/mekonen/.mcp-global/servers/binaries/pdf-mcp-server/build",
+        "main_file_path": "/Users/mekonen/.mcp-global/servers/binaries/pdf-mcp-server/build/index.js",
+        "package_json_exists": true,
+        "dependencies_installed": true
+      },
+      "environment": {
+        "required_vars": [],
+        "available_vars": {},
+        "missing_vars": [],
+        "all_present": true
+      }
+    }
+  },
+  "event-logger-mcp-server": {
+    "server_id": "event-logger-mcp-server",
+    "name": "event-logger-mcp-server",
+    "type": "nodejs",
+    "category": "uncategorized",
+    "exists": true,
+    "timestamp": "2025-09-20T17:34:54.242257",
+    "overall_status": "healthy",
+    "checks": {
+      "build": {
+        "server_exists": true,
+        "build_available": true,
+        "main_file_exists": true,
+        "build_path": "/Users/mekonen/.mcp-global/servers/binaries/event-logger-mcp-server/build",
+        "main_file_path": "/Users/mekonen/.mcp-global/servers/binaries/event-logger-mcp-server/build/index.js",
+        "package_json_exists": true,
+        "dependencies_installed": true
+      },
+      "environment": {
+        "required_vars": [],
+        "available_vars": {},
+        "missing_vars": [],
+        "all_present": true
+      }
+    }
+  },
+  "gmail-mcp": {
+    "server_id": "gmail-mcp",
+    "name": "gmail-mcp",
+    "type": "nodejs",
+    "category": "productivity",
+    "exists": true,
+    "timestamp": "2025-09-20T17:34:54.242310",
+    "overall_status": "env_missing",
+    "checks": {
+      "build": {
+        "server_exists": true,
+        "build_available": true,
+        "main_file_exists": true,
+        "build_path": "/Users/mekonen/.mcp-global/servers/binaries/gmail-mcp/build",
+        "main_file_path": "/Users/mekonen/.mcp-global/servers/binaries/gmail-mcp/build/index.js",
+        "package_json_exists": true,
+        "dependencies_installed": true
+      },
+      "environment": {
+        "required_vars": [
+          "GMAIL_CREDENTIALS_PATH",
+          "GMAIL_TOKEN_PATH",
+          "GEMINI_API_KEY"
+        ],
+        "available_vars": {
+          "GMAIL_CREDENTIALS_PATH": false,
+          "GMAIL_TOKEN_PATH": true,
+          "GEMINI_API_KEY": true
+        },
+        "missing_vars": [
+          "GMAIL_CREDENTIALS_PATH"
+        ],
+        "all_present": false
+      }
+    }
+  },
+  "google-calendar-mcp": {
+    "server_id": "google-calendar-mcp",
+    "name": "google-calendar-mcp",
+    "type": "nodejs",
+    "category": "productivity",
+    "exists": true,
+    "timestamp": "2025-09-20T17:34:54.242361",
+    "overall_status": "env_missing",
+    "checks": {
+      "build": {
+        "server_exists": true,
+        "build_available": true,
+        "main_file_exists": true,
+        "build_path": "/Users/mekonen/.mcp-global/servers/binaries/google-calendar-mcp/build",
+        "main_file_path": "/Users/mekonen/.mcp-global/servers/binaries/google-calendar-mcp/build/index.js",
+        "package_json_exists": true,
+        "dependencies_installed": true
+      },
+      "environment": {
+        "required_vars": [
+          "GCAL_CREDENTIALS_PATH",
+          "GCAL_TOKEN_PATH"
+        ],
+        "available_vars": {
+          "GCAL_CREDENTIALS_PATH": false,
+          "GCAL_TOKEN_PATH": true
+        },
+        "missing_vars": [
+          "GCAL_CREDENTIALS_PATH"
+        ],
+        "all_present": false
+      }
+    }
+  },
+  "new-google-calendar-mcp": {
+    "server_id": "new-google-calendar-mcp",
+    "name": "new-google-calendar-mcp",
+    "type": "nodejs",
+    "category": "productivity",
+    "exists": true,
+    "timestamp": "2025-09-20T17:34:54.242415",
+    "overall_status": "env_missing",
+    "checks": {
+      "build": {
+        "server_exists": true,
+        "build_available": true,
+        "main_file_exists": true,
+        "build_path": "/Users/mekonen/.mcp-global/servers/binaries/new-google-calendar-mcp/build",
+        "main_file_path": "/Users/mekonen/.mcp-global/servers/binaries/new-google-calendar-mcp/build/index.js",
+        "package_json_exists": true,
+        "dependencies_installed": true
+      },
+      "environment": {
+        "required_vars": [
+          "GCAL_CREDENTIALS_PATH",
+          "GCAL_TOKEN_PATH"
+        ],
+        "available_vars": {
+          "GCAL_CREDENTIALS_PATH": false,
+          "GCAL_TOKEN_PATH": true
+        },
+        "missing_vars": [
+          "GCAL_CREDENTIALS_PATH"
+        ],
+        "all_present": false
+      }
+    }
+  },
+  "google-drive-mcp": {
+    "server_id": "google-drive-mcp",
+    "name": "google-drive-mcp",
+    "type": "nodejs",
+    "category": "productivity",
+    "exists": true,
+    "timestamp": "2025-09-20T17:34:54.242461",
+    "overall_status": "env_missing",
+    "checks": {
+      "build": {
+        "server_exists": true,
+        "build_available": true,
+        "main_file_exists": true,
+        "build_path": "/Users/mekonen/.mcp-global/servers/binaries/google-drive-mcp/build",
+        "main_file_path": "/Users/mekonen/.mcp-global/servers/binaries/google-drive-mcp/build/index.js",
+        "package_json_exists": true,
+        "dependencies_installed": true
+      },
+      "environment": {
+        "required_vars": [
+          "GDRIVE_CREDENTIALS_PATH",
+          "GDRIVE_TOKEN_PATH"
+        ],
+        "available_vars": {
+          "GDRIVE_CREDENTIALS_PATH": false,
+          "GDRIVE_TOKEN_PATH": true
+        },
+        "missing_vars": [
+          "GDRIVE_CREDENTIALS_PATH"
+        ],
+        "all_present": false
+      }
+    }
+  },
+  "youtube-mcp-server-new": {
+    "server_id": "youtube-mcp-server-new",
+    "name": "youtube-mcp-server-new",
+    "type": "nodejs",
+    "category": "media",
+    "exists": true,
+    "timestamp": "2025-09-20T17:34:54.242515",
+    "overall_status": "healthy",
+    "checks": {
+      "build": {
+        "server_exists": true,
+        "build_available": true,
+        "main_file_exists": true,
+        "build_path": "/Users/mekonen/.mcp-global/servers/binaries/youtube-mcp-server-new/dist",
+        "main_file_path": "/Users/mekonen/.mcp-global/servers/binaries/youtube-mcp-server-new/dist/index.js",
+        "package_json_exists": true,
+        "dependencies_installed": true
+      },
+      "environment": {
+        "required_vars": [],
+        "available_vars": {},
+        "missing_vars": [],
+        "all_present": true
+      }
+    }
+  },
+  "ynab-mcp-server": {
+    "server_id": "ynab-mcp-server",
+    "name": "ynab-mcp-server",
+    "type": "nodejs",
+    "category": "uncategorized",
+    "exists": true,
+    "timestamp": "2025-09-20T17:34:54.242573",
+    "overall_status": "healthy",
+    "checks": {
+      "build": {
+        "server_exists": true,
+        "build_available": true,
+        "main_file_exists": true,
+        "build_path": "/Users/mekonen/.mcp-global/servers/binaries/ynab-mcp-server/build",
+        "main_file_path": "/Users/mekonen/.mcp-global/servers/binaries/ynab-mcp-server/build/index.js",
+        "package_json_exists": true,
+        "dependencies_installed": true
+      },
+      "environment": {
+        "required_vars": [
+          "YNAB_API_KEY"
+        ],
+        "available_vars": {
+          "YNAB_API_KEY": true
+        },
+        "missing_vars": [],
+        "all_present": true
+      }
+    }
+  },
+  "todoist-mcp-server": {
+    "server_id": "todoist-mcp-server",
+    "name": "todoist-mcp-server",
+    "type": "nodejs",
+    "category": "productivity",
+    "exists": true,
+    "timestamp": "2025-09-20T17:34:54.242626",
+    "overall_status": "healthy",
+    "checks": {
+      "build": {
+        "server_exists": true,
+        "build_available": true,
+        "main_file_exists": true,
+        "build_path": "/Users/mekonen/.mcp-global/servers/binaries/todoist-mcp-server/dist",
+        "main_file_path": "/Users/mekonen/.mcp-global/servers/binaries/todoist-mcp-server/dist/index.js",
+        "package_json_exists": true,
+        "dependencies_installed": true
+      },
+      "environment": {
+        "required_vars": [
+          "TODOIST_API_TOKEN"
+        ],
+        "available_vars": {
+          "TODOIST_API_TOKEN": true
+        },
+        "missing_vars": [],
+        "all_present": true
+      }
+    }
+  },
+  "youtube-mcp-server": {
+    "server_id": "youtube-mcp-server",
+    "name": "youtube-mcp-server",
+    "type": "nodejs",
+    "category": "media",
+    "exists": true,
+    "timestamp": "2025-09-20T17:34:54.242677",
+    "overall_status": "healthy",
+    "checks": {
+      "build": {
+        "server_exists": true,
+        "build_available": true,
+        "main_file_exists": true,
+        "build_path": "/Users/mekonen/.mcp-global/servers/binaries/youtube-mcp-server/build",
+        "main_file_path": "/Users/mekonen/.mcp-global/servers/binaries/youtube-mcp-server/build/index.js",
+        "package_json_exists": true,
+        "dependencies_installed": true
+      },
+      "environment": {
+        "required_vars": [],
+        "available_vars": {},
+        "missing_vars": [],
+        "all_present": true
+      }
+    }
+  },
+  "filesystem": {
+    "server_id": "filesystem",
+    "name": "Filesystem Server",
+    "type": "npm",
+    "category": "productivity",
+    "exists": true,
+    "timestamp": "2025-09-20T17:34:54.242721",
+    "overall_status": "healthy",
+    "checks": {
+      "build": {
+        "server_exists": true,
+        "build_available": true,
+        "main_file_exists": true,
+        "build_path": null,
+        "main_file_path": null,
+        "package_json_exists": false,
+        "dependencies_installed": false
+      },
+      "environment": {
+        "required_vars": [],
+        "available_vars": {},
+        "missing_vars": [],
+        "all_present": true
+      }
+    }
+  },
+  "desktop-commander": {
+    "server_id": "desktop-commander",
+    "name": "Desktop Commander",
+    "type": "npm",
+    "category": "automation",
+    "exists": true,
+    "timestamp": "2025-09-20T17:34:54.242749",
+    "overall_status": "healthy",
+    "checks": {
+      "build": {
+        "server_exists": true,
+        "build_available": true,
+        "main_file_exists": true,
+        "build_path": null,
+        "main_file_path": null,
+        "package_json_exists": false,
+        "dependencies_installed": false
+      },
+      "environment": {
+        "required_vars": [],
+        "available_vars": {},
+        "missing_vars": [],
+        "all_present": true
+      }
+    }
+  },
+  "github": {
+    "server_id": "github",
+    "name": "GitHub MCP",
+    "type": "npm",
+    "category": "development",
+    "exists": true,
+    "timestamp": "2025-09-20T17:34:54.242772",
+    "overall_status": "healthy",
+    "checks": {
+      "build": {
+        "server_exists": true,
+        "build_available": true,
+        "main_file_exists": true,
+        "build_path": null,
+        "main_file_path": null,
+        "package_json_exists": false,
+        "dependencies_installed": false
+      },
+      "environment": {
+        "required_vars": [
+          "githubPersonalAccessToken"
+        ],
+        "available_vars": {
+          "githubPersonalAccessToken": true
+        },
+        "missing_vars": [],
+        "all_present": true
+      }
+    }
+  }
+}

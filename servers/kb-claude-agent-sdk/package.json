@@ -1,0 +1,24 @@
+{
+  "name": "kb-claude-agent-sdk",
+  "version": "1.0.0",
+  "description": "Knowledge Base MCP server for claude-agent-sdk",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^0.5.0"
+  },
+  "keywords": [
+    "mcp",
+    "knowledge-base",
+    "lancedb",
+    "vector-search",
+    "search",
+    "claude-agent-sdk"
+  ],
+  "author": "Knowledge Base MCP Generator",
+  "license": "MIT"
+}

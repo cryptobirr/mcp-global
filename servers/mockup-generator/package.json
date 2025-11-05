@@ -1,0 +1,25 @@
+{
+  "name": "mockup-generator-mcp-server",
+  "version": "1.0.0",
+  "description": "MCP server for generating UI mockups from React/React Native components",
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "start": "node dist/index.js",
+    "mockup-app:dev": "cd mockup-app && npm run dev",
+    "mockup-app:build": "cd mockup-app && npm run build"
+  },
+  "keywords": ["mcp", "mockup", "react", "react-native", "playwright", "screenshots"],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.4",
+    "playwright": "^1.49.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "typescript": "^5.7.2"
+  }
+}

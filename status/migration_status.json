@@ -1,0 +1,28 @@
+{
+  "migration_started": "2025-09-21T00:05:46Z",
+  "phases_completed": [
+    "2",
+    "3",
+    "4",
+    "5",
+    "6"
+  ],
+  "current_phase": "7",
+  "last_successful_phase": "6",
+  "total_phases": 8,
+  "status": "in_progress",
+  "rollback_available": true,
+  "errors": [],
+  "warnings": [],
+  "phase_2_completed": "2025-09-20T17:06:43.580496",
+  "backup_directory": "/Users/mekonen/.mcp-global/backups/20250920_170611",
+  "phase_3_completed": "2025-09-20T17:14:07.884793",
+  "servers_migrated": true,
+  "phase_4_completed": "2025-09-20T17:28:36.932425",
+  "management_system_installed": true,
+  "phase_5_completed": "2025-09-20T17:42:41.567165",
+  "configurations_generated": true,
+  "phase_6_completed": "2025-09-20T17:58:21.029888",
+  "deployment_system_ready": true,
+  "configurations_tested": true
+}

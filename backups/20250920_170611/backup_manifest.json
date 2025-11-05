@@ -1,0 +1,19 @@
+{
+  "backup_created": "2025-09-20T17:06:42.385653",
+  "backup_directory": "/Users/mekonen/.mcp-global/backups/20250920_170611",
+  "source_directory": "/Users/mekonen/Documents/Cline/MCP",
+  "backup_contents": {
+    "configs": [
+      "claude_desktop_config.json",
+      "claude_code_config.json"
+    ],
+    "servers": [
+      "original_servers"
+    ],
+    "credentials": []
+  },
+  "sizes": {
+    "total": "2.2G"
+  },
+  "file_count": 70197
+}

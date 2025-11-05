@@ -1,0 +1,28 @@
+{
+  "servers": {
+    "gmail-mcp": {
+      "name": "gmail-mcp",
+      "category": "productivity",
+      "description": "Gmail integration for sending and reading emails",
+      "path": "/path/to/gmail-mcp",
+      "env": {
+        "GMAIL_API_KEY": "test-key"
+      }
+    },
+    "postgres-mcp": {
+      "name": "postgres-mcp",
+      "category": "database",
+      "description": "PostgreSQL database operations",
+      "path": "/path/to/postgres-mcp",
+      "env": {
+        "DB_CONNECTION_STRING": "postgresql://test"
+      }
+    },
+    "weather-mcp": {
+      "name": "weather-mcp",
+      "category": "api",
+      "description": "Weather information and forecasts",
+      "path": "/path/to/weather-mcp"
+    }
+  }
+}

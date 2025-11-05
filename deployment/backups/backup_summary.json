@@ -1,0 +1,46 @@
+{
+  "backup_timestamp": "2025-09-20T17:52:42.024067",
+  "backup_summary": {
+    "cline": {
+      "files_backed_up": 0,
+      "backup_files": [],
+      "has_existing_config": false
+    },
+    "claude-code": {
+      "files_backed_up": 2,
+      "backup_files": [
+        "mcp_servers_20250920_175018.json",
+        "current_backup.json"
+      ],
+      "has_existing_config": true
+    },
+    "cursor": {
+      "files_backed_up": 0,
+      "backup_files": [],
+      "has_existing_config": false
+    },
+    "claude-desktop": {
+      "files_backed_up": 2,
+      "backup_files": [
+        "claude_desktop_config_20250920_175014.json",
+        "current_backup.json"
+      ],
+      "has_existing_config": true
+    },
+    "continue": {
+      "files_backed_up": 0,
+      "backup_files": [],
+      "has_existing_config": false
+    }
+  },
+  "total_files_backed_up": 4,
+  "tools_with_existing_configs": [
+    "claude-code",
+    "claude-desktop"
+  ],
+  "tools_without_existing_configs": [
+    "cline",
+    "cursor",
+    "continue"
+  ]
+}

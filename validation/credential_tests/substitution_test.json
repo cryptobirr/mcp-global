@@ -1,0 +1,95 @@
+{
+  "test_timestamp": "2025-09-20T17:39:40.376380",
+  "credential_placeholders_found": {},
+  "unresolved_placeholders": {},
+  "properly_substituted": {
+    "cline/productivity": [
+      "gmail-mcp.GMAIL_TOKEN_PATH",
+      "gmail-mcp.GEMINI_API_KEY",
+      "google-calendar-mcp.GCAL_TOKEN_PATH",
+      "new-google-calendar-mcp.GCAL_TOKEN_PATH",
+      "google-drive-mcp.GDRIVE_TOKEN_PATH",
+      "todoist-mcp-server.TODOIST_API_TOKEN"
+    ],
+    "cline/development": [
+      "postgres-mcp-server.DB_PASSWORD"
+    ],
+    "cline/database": [
+      "postgres-mcp-server.DB_PASSWORD"
+    ],
+    "cline/automation": [
+      "mcp-browser-use.ANTHROPIC_API_KEY"
+    ],
+    "claude-code/productivity": [
+      "gmail-mcp.GMAIL_TOKEN_PATH",
+      "gmail-mcp.GEMINI_API_KEY",
+      "google-calendar-mcp.GCAL_TOKEN_PATH",
+      "new-google-calendar-mcp.GCAL_TOKEN_PATH",
+      "google-drive-mcp.GDRIVE_TOKEN_PATH",
+      "todoist-mcp-server.TODOIST_API_TOKEN"
+    ],
+    "claude-code/development": [
+      "postgres-mcp-server.DB_PASSWORD"
+    ],
+    "claude-code/database": [
+      "postgres-mcp-server.DB_PASSWORD"
+    ],
+    "claude-code/automation": [
+      "mcp-browser-use.ANTHROPIC_API_KEY"
+    ],
+    "cursor/productivity": [
+      "gmail-mcp.GMAIL_TOKEN_PATH",
+      "gmail-mcp.GEMINI_API_KEY",
+      "google-calendar-mcp.GCAL_TOKEN_PATH",
+      "new-google-calendar-mcp.GCAL_TOKEN_PATH",
+      "google-drive-mcp.GDRIVE_TOKEN_PATH",
+      "todoist-mcp-server.TODOIST_API_TOKEN"
+    ],
+    "cursor/development": [
+      "postgres-mcp-server.DB_PASSWORD"
+    ],
+    "cursor/database": [
+      "postgres-mcp-server.DB_PASSWORD"
+    ],
+    "cursor/automation": [
+      "mcp-browser-use.ANTHROPIC_API_KEY"
+    ],
+    "claude-desktop/productivity": [
+      "gmail-mcp.GMAIL_TOKEN_PATH",
+      "gmail-mcp.GEMINI_API_KEY",
+      "google-calendar-mcp.GCAL_TOKEN_PATH",
+      "new-google-calendar-mcp.GCAL_TOKEN_PATH",
+      "google-drive-mcp.GDRIVE_TOKEN_PATH",
+      "todoist-mcp-server.TODOIST_API_TOKEN"
+    ],
+    "claude-desktop/development": [
+      "postgres-mcp-server.DB_PASSWORD"
+    ],
+    "claude-desktop/database": [
+      "postgres-mcp-server.DB_PASSWORD"
+    ],
+    "claude-desktop/automation": [
+      "mcp-browser-use.ANTHROPIC_API_KEY"
+    ],
+    "continue/productivity": [
+      "gmail-mcp.GMAIL_TOKEN_PATH",
+      "gmail-mcp.GEMINI_API_KEY",
+      "google-calendar-mcp.GCAL_TOKEN_PATH",
+      "new-google-calendar-mcp.GCAL_TOKEN_PATH",
+      "google-drive-mcp.GDRIVE_TOKEN_PATH",
+      "todoist-mcp-server.TODOIST_API_TOKEN"
+    ],
+    "continue/development": [
+      "postgres-mcp-server.DB_PASSWORD"
+    ],
+    "continue/database": [
+      "postgres-mcp-server.DB_PASSWORD"
+    ],
+    "continue/automation": [
+      "mcp-browser-use.ANTHROPIC_API_KEY"
+    ]
+  },
+  "total_env_vars": 45,
+  "substituted_env_vars": 45,
+  "issues": []
+}

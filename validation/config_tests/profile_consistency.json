@@ -1,0 +1,113 @@
+{
+  "consistency_timestamp": "2025-09-20T17:40:53.796039",
+  "profile_analysis": {
+    "productivity": {
+      "tools": [
+        "cline",
+        "claude-code",
+        "cursor",
+        "claude-desktop",
+        "continue"
+      ],
+      "server_consistency": true,
+      "common_servers": [
+        "google-calendar-mcp",
+        "google-drive-mcp",
+        "new-google-calendar-mcp",
+        "todoist-mcp-server",
+        "gmail-mcp"
+      ],
+      "tool_differences": {}
+    },
+    "development": {
+      "tools": [
+        "cline",
+        "claude-code",
+        "cursor",
+        "claude-desktop",
+        "continue"
+      ],
+      "server_consistency": true,
+      "common_servers": [
+        "postgres-mcp-server"
+      ],
+      "tool_differences": {}
+    },
+    "media": {
+      "tools": [
+        "cline",
+        "claude-code",
+        "cursor",
+        "claude-desktop",
+        "continue"
+      ],
+      "server_consistency": true,
+      "common_servers": [
+        "youtube-mcp-server-new",
+        "pdf-mcp-server",
+        "excel-mcp-server",
+        "youtube-mcp-server"
+      ],
+      "tool_differences": {}
+    },
+    "database": {
+      "tools": [
+        "cline",
+        "claude-code",
+        "cursor",
+        "claude-desktop",
+        "continue"
+      ],
+      "server_consistency": true,
+      "common_servers": [
+        "postgres-mcp-server"
+      ],
+      "tool_differences": {}
+    },
+    "automation": {
+      "tools": [
+        "cline",
+        "claude-code",
+        "cursor",
+        "claude-desktop",
+        "continue"
+      ],
+      "server_consistency": true,
+      "common_servers": [
+        "mcp-browser-use"
+      ],
+      "tool_differences": {}
+    },
+    "default": {
+      "tools": [
+        "cline",
+        "claude-code",
+        "cursor",
+        "claude-desktop",
+        "continue"
+      ],
+      "server_consistency": true,
+      "common_servers": [
+        "filesystem"
+      ],
+      "tool_differences": {}
+    }
+  },
+  "consistency_issues": [],
+  "tools_tested": [
+    "cline",
+    "claude-code",
+    "cursor",
+    "claude-desktop",
+    "continue"
+  ],
+  "profiles_tested": [
+    "productivity",
+    "development",
+    "media",
+    "database",
+    "automation",
+    "default"
+  ],
+  "overall_consistency": true
+}

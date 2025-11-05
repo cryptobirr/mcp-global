@@ -1,0 +1,169 @@
+{
+  "validation_timestamp": "2025-09-20T17:39:01.262683",
+  "total_configs": 30,
+  "valid_configs": 30,
+  "invalid_configs": 0,
+  "validation_details": {
+    "cline": {
+      "productivity": {
+        "valid": true,
+        "file_size": 1559,
+        "server_count": 5
+      },
+      "development": {
+        "valid": true,
+        "file_size": 263,
+        "server_count": 1
+      },
+      "media": {
+        "valid": true,
+        "file_size": 714,
+        "server_count": 4
+      },
+      "database": {
+        "valid": true,
+        "file_size": 263,
+        "server_count": 1
+      },
+      "automation": {
+        "valid": true,
+        "file_size": 354,
+        "server_count": 1
+      },
+      "default": {
+        "valid": true,
+        "file_size": 170,
+        "server_count": 1
+      }
+    },
+    "claude-code": {
+      "productivity": {
+        "valid": true,
+        "file_size": 1553,
+        "server_count": 5
+      },
+      "development": {
+        "valid": true,
+        "file_size": 257,
+        "server_count": 1
+      },
+      "media": {
+        "valid": true,
+        "file_size": 708,
+        "server_count": 4
+      },
+      "database": {
+        "valid": true,
+        "file_size": 257,
+        "server_count": 1
+      },
+      "automation": {
+        "valid": true,
+        "file_size": 348,
+        "server_count": 1
+      },
+      "default": {
+        "valid": true,
+        "file_size": 164,
+        "server_count": 1
+      }
+    },
+    "cursor": {
+      "productivity": {
+        "valid": true,
+        "file_size": 1668,
+        "server_count": 5
+      },
+      "development": {
+        "valid": true,
+        "file_size": 280,
+        "server_count": 1
+      },
+      "media": {
+        "valid": true,
+        "file_size": 800,
+        "server_count": 4
+      },
+      "database": {
+        "valid": true,
+        "file_size": 280,
+        "server_count": 1
+      },
+      "automation": {
+        "valid": true,
+        "file_size": 371,
+        "server_count": 1
+      },
+      "default": {
+        "valid": true,
+        "file_size": 187,
+        "server_count": 1
+      }
+    },
+    "claude-desktop": {
+      "productivity": {
+        "valid": true,
+        "file_size": 1553,
+        "server_count": 5
+      },
+      "development": {
+        "valid": true,
+        "file_size": 257,
+        "server_count": 1
+      },
+      "media": {
+        "valid": true,
+        "file_size": 708,
+        "server_count": 4
+      },
+      "database": {
+        "valid": true,
+        "file_size": 257,
+        "server_count": 1
+      },
+      "automation": {
+        "valid": true,
+        "file_size": 348,
+        "server_count": 1
+      },
+      "default": {
+        "valid": true,
+        "file_size": 164,
+        "server_count": 1
+      }
+    },
+    "continue": {
+      "productivity": {
+        "valid": true,
+        "file_size": 1823,
+        "server_count": 5
+      },
+      "development": {
+        "valid": true,
+        "file_size": 527,
+        "server_count": 1
+      },
+      "media": {
+        "valid": true,
+        "file_size": 978,
+        "server_count": 4
+      },
+      "database": {
+        "valid": true,
+        "file_size": 527,
+        "server_count": 1
+      },
+      "automation": {
+        "valid": true,
+        "file_size": 618,
+        "server_count": 1
+      },
+      "default": {
+        "valid": true,
+        "file_size": 434,
+        "server_count": 1
+      }
+    }
+  },
+  "errors": []
+}

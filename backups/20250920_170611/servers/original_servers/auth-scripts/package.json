@@ -1,0 +1,19 @@
+{
+  "name": "google-auth-scripts",
+  "version": "1.0.0",
+  "description": "Scripts to authenticate Google APIs for MCP servers",
+  "main": "google-auth.js",
+  "scripts": {
+    "auth:calendar": "node google-auth.js calendar",
+    "auth:gmail": "node google-auth.js gmail",
+    "auth:drive": "node google-auth.js drive",
+    "auth:all": "npm run auth:calendar && npm run auth:gmail && npm run auth:drive",
+    "manual:calendar": "node manual-google-auth.js calendar",
+    "manual:gmail": "node manual-google-auth.js gmail",
+    "manual:drive": "node manual-google-auth.js drive"
+  },
+  "dependencies": {
+    "@google-cloud/local-auth": "^2.1.0",
+    "googleapis": "^105.0.0"
+  }
+}

@@ -1,0 +1,265 @@
+{
+  "version": "3.0.0",
+  "description": "Global MCP Server Registry - Centralized for all LLM tools",
+  "lastUpdated": "2025-09-20T17:14:07.846398",
+  "source_directory": "/Users/mekonen/Documents/Cline/MCP",
+  "migrated_to": "/Users/mekonen/.mcp-global",
+  "servers": {
+    "excel-mcp-server": {
+      "name": "excel-mcp-server",
+      "type": "nodejs",
+      "path": "~/.mcp-global/servers/binaries/excel-mcp-server",
+      "built": true,
+      "main_file": "~/.mcp-global/servers/binaries/excel-mcp-server/build/index.js",
+      "category": "media",
+      "requires_env": []
+    },
+    "time-tracker-mcp-server": {
+      "name": "time-tracker-mcp-server",
+      "type": "nodejs",
+      "path": "~/.mcp-global/servers/binaries/time-tracker-mcp-server",
+      "built": true,
+      "main_file": "~/.mcp-global/servers/binaries/time-tracker-mcp-server/build/index.js",
+      "category": "uncategorized",
+      "requires_env": []
+    },
+    "postgres-mcp-server": {
+      "name": "postgres-mcp-server",
+      "type": "nodejs",
+      "path": "~/.mcp-global/servers/binaries/postgres-mcp-server",
+      "built": true,
+      "main_file": "~/.mcp-global/servers/binaries/postgres-mcp-server/build/index.js",
+      "category": "database",
+      "requires_env": [
+        "DB_USER",
+        "DB_HOST",
+        "DB_NAME",
+        "DB_PASSWORD",
+        "DB_PORT"
+      ]
+    },
+    "mcp-browser-use": {
+      "name": "mcp-browser-use",
+      "type": "python",
+      "path": "~/.mcp-global/servers/binaries/mcp-browser-use",
+      "built": false,
+      "main_file": "~/.mcp-global/servers/binaries/mcp-browser-use/main.py",
+      "category": "automation",
+      "requires_env": [
+        "ANTHROPIC_API_KEY"
+      ]
+    },
+    "dropbox-mcp-server": {
+      "name": "dropbox-mcp-server",
+      "type": "nodejs",
+      "path": "~/.mcp-global/servers/binaries/dropbox-mcp-server",
+      "built": true,
+      "main_file": "~/.mcp-global/servers/binaries/dropbox-mcp-server/build/index.js",
+      "category": "uncategorized",
+      "requires_env": [
+        "DROPBOX_ACCESS_TOKEN"
+      ]
+    },
+    "pdf-mcp-server": {
+      "name": "pdf-mcp-server",
+      "type": "nodejs",
+      "path": "~/.mcp-global/servers/binaries/pdf-mcp-server",
+      "built": true,
+      "main_file": "~/.mcp-global/servers/binaries/pdf-mcp-server/build/index.js",
+      "category": "media",
+      "requires_env": []
+    },
+    "event-logger-mcp-server": {
+      "name": "event-logger-mcp-server",
+      "type": "nodejs",
+      "path": "~/.mcp-global/servers/binaries/event-logger-mcp-server",
+      "built": true,
+      "main_file": "~/.mcp-global/servers/binaries/event-logger-mcp-server/build/index.js",
+      "category": "uncategorized",
+      "requires_env": []
+    },
+    "gmail-mcp": {
+      "name": "gmail-mcp",
+      "type": "nodejs",
+      "path": "~/.mcp-global/servers/binaries/gmail-mcp",
+      "built": true,
+      "main_file": "~/.mcp-global/servers/binaries/gmail-mcp/build/index.js",
+      "category": "productivity",
+      "requires_env": [
+        "GMAIL_CREDENTIALS_PATH",
+        "GMAIL_TOKEN_PATH",
+        "GEMINI_API_KEY"
+      ]
+    },
+    "google-calendar-mcp": {
+      "name": "google-calendar-mcp",
+      "type": "nodejs",
+      "path": "~/.mcp-global/servers/binaries/google-calendar-mcp",
+      "built": true,
+      "main_file": "~/.mcp-global/servers/binaries/google-calendar-mcp/build/index.js",
+      "category": "productivity",
+      "requires_env": [
+        "GCAL_CREDENTIALS_PATH",
+        "GCAL_TOKEN_PATH"
+      ]
+    },
+    "new-google-calendar-mcp": {
+      "name": "new-google-calendar-mcp",
+      "type": "nodejs",
+      "path": "~/.mcp-global/servers/binaries/new-google-calendar-mcp",
+      "built": true,
+      "main_file": "~/.mcp-global/servers/binaries/new-google-calendar-mcp/build/index.js",
+      "category": "productivity",
+      "requires_env": [
+        "GCAL_CREDENTIALS_PATH",
+        "GCAL_TOKEN_PATH"
+      ]
+    },
+    "google-drive-mcp": {
+      "name": "google-drive-mcp",
+      "type": "nodejs",
+      "path": "~/.mcp-global/servers/binaries/google-drive-mcp",
+      "built": true,
+      "main_file": "~/.mcp-global/servers/binaries/google-drive-mcp/build/index.js",
+      "category": "productivity",
+      "requires_env": [
+        "GDRIVE_CREDENTIALS_PATH",
+        "GDRIVE_TOKEN_PATH"
+      ]
+    },
+    "youtube-mcp-server-new": {
+      "name": "youtube-mcp-server-new",
+      "type": "nodejs",
+      "path": "~/.mcp-global/servers/binaries/youtube-mcp-server-new",
+      "built": true,
+      "main_file": "~/.mcp-global/servers/binaries/youtube-mcp-server-new/dist/index.js",
+      "category": "media",
+      "requires_env": []
+    },
+    "ynab-mcp-server": {
+      "name": "ynab-mcp-server",
+      "type": "nodejs",
+      "path": "~/.mcp-global/servers/binaries/ynab-mcp-server",
+      "built": true,
+      "main_file": "~/.mcp-global/servers/binaries/ynab-mcp-server/build/index.js",
+      "category": "uncategorized",
+      "requires_env": [
+        "YNAB_API_KEY"
+      ]
+    },
+    "todoist-mcp-server": {
+      "name": "todoist-mcp-server",
+      "type": "nodejs",
+      "path": "~/.mcp-global/servers/binaries/todoist-mcp-server",
+      "built": true,
+      "main_file": "~/.mcp-global/servers/binaries/todoist-mcp-server/dist/index.js",
+      "category": "productivity",
+      "requires_env": [
+        "TODOIST_API_TOKEN"
+      ]
+    },
+    "youtube-mcp-server": {
+      "name": "youtube-mcp-server",
+      "type": "nodejs",
+      "path": "~/.mcp-global/servers/binaries/youtube-mcp-server",
+      "built": true,
+      "main_file": "~/.mcp-global/servers/binaries/youtube-mcp-server/build/index.js",
+      "category": "media",
+      "requires_env": []
+    },
+    "filesystem": {
+      "name": "Filesystem Server",
+      "type": "npm",
+      "package": "@modelcontextprotocol/server-filesystem",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-filesystem"
+      ],
+      "category": "productivity"
+    },
+    "desktop-commander": {
+      "name": "Desktop Commander",
+      "type": "npm",
+      "package": "@wonderwhy-er/desktop-commander",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@smithery/cli@latest",
+        "run",
+        "@wonderwhy-er/desktop-commander"
+      ],
+      "category": "automation"
+    },
+    "github": {
+      "name": "GitHub MCP",
+      "type": "npm",
+      "package": "@smithery-ai/github",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@smithery/cli@latest",
+        "run",
+        "@smithery-ai/github"
+      ],
+      "category": "development",
+      "requires_env": [
+        "githubPersonalAccessToken"
+      ]
+    }
+  },
+  "profiles": {
+    "default": [
+      "filesystem"
+    ],
+    "development": [
+      "postgres-mcp-server"
+    ],
+    "productivity": [
+      "gmail-mcp",
+      "google-calendar-mcp",
+      "new-google-calendar-mcp",
+      "google-drive-mcp",
+      "todoist-mcp-server"
+    ],
+    "media": [
+      "excel-mcp-server",
+      "pdf-mcp-server",
+      "youtube-mcp-server-new",
+      "youtube-mcp-server"
+    ],
+    "database": [
+      "postgres-mcp-server"
+    ],
+    "automation": [
+      "mcp-browser-use"
+    ]
+  },
+  "tools": {
+    "claude-desktop": {
+      "configPath": "~/Library/Application Support/Claude/claude_desktop_config.json",
+      "format": "claude-desktop",
+      "supported": true
+    },
+    "claude-code": {
+      "configPath": "~/.config/claude-code/mcp_servers.json",
+      "format": "claude-code",
+      "supported": true
+    },
+    "cursor": {
+      "configPath": "mcp.json",
+      "format": "cursor",
+      "supported": true
+    },
+    "continue": {
+      "configPath": "config.json",
+      "format": "continue",
+      "supported": true
+    },
+    "cline": {
+      "configPath": "settings.json",
+      "format": "vscode",
+      "supported": true
+    }
+  }
+}

@@ -1,0 +1,47 @@
+# Dependencies
+node_modules/
+
+# macOS
+.DS_Store
+
+# IDE
+.vscode/
+.idea/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+npm-debug.log*
+
+# Temporary files
+*.tmp
+*.temp
+
+# Build outputs
+dist/
+build/
+*.js.map
+
+# Secrets and credentials
+**/token.json
+**/secrets/
+**/credentials.json
+**/*_token.json
+**/*_credentials.json
+**/*.pem
+**/*.key
+**/*_key.*
+
+# Config files that may contain secrets
+**/config/production.json
+**/config/local.json
+backups/**/configs/
+deployment/backups/claude-code/
+deployment/backups/claude-desktop/
+deployment/testing/
+generated/
+shared/credentials/

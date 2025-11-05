@@ -1,0 +1,67 @@
+{
+  "format_test_timestamp": "2025-09-20T17:41:39.170147",
+  "tool_format_tests": {
+    "claude-desktop": {
+      "profiles_tested": [
+        "productivity",
+        "development",
+        "media",
+        "database",
+        "automation",
+        "default"
+      ],
+      "format_compliant": true,
+      "issues": []
+    },
+    "claude-code": {
+      "profiles_tested": [
+        "productivity",
+        "development",
+        "media",
+        "database",
+        "automation",
+        "default"
+      ],
+      "format_compliant": true,
+      "issues": []
+    },
+    "cursor": {
+      "profiles_tested": [
+        "productivity",
+        "development",
+        "media",
+        "database",
+        "automation",
+        "default"
+      ],
+      "format_compliant": true,
+      "issues": []
+    },
+    "continue": {
+      "profiles_tested": [
+        "productivity",
+        "development",
+        "media",
+        "database",
+        "automation",
+        "default"
+      ],
+      "format_compliant": true,
+      "issues": []
+    },
+    "cline": {
+      "profiles_tested": [
+        "productivity",
+        "development",
+        "media",
+        "database",
+        "automation",
+        "default"
+      ],
+      "format_compliant": true,
+      "issues": []
+    }
+  },
+  "format_compliance_issues": [],
+  "overall_format_compliance": true
+}

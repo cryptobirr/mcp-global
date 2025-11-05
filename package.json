@@ -1,0 +1,7 @@
+{
+  "dependencies": {
+    "@abhiz123/todoist-mcp-server": "^0.1.0",
+    "@kimtaeyoon83/mcp-server-youtube-transcript": "^0.1.1",
+    "@playwright/mcp": "^0.0.40"
+  }
+}

@@ -1,0 +1,3 @@
+#!/bin/bash
+# Global MCP Management Command
+python3 "$HOME/.mcp-global/scripts/mcp-manager.py" "$@"

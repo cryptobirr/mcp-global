@@ -1,0 +1,99 @@
+{
+  "deployments": [
+    {
+      "timestamp": "2025-09-20T17:54:34.323015",
+      "action": "deploy",
+      "tool": "claude-desktop",
+      "details": {
+        "profile": "default",
+        "config_file": "/Users/mekonen/.mcp-global/generated/claude-desktop/default.json",
+        "tool_path": "/Users/mekonen/Library/Application Support/Claude/claude_desktop_config.json",
+        "backup_path": "/Users/mekonen/.mcp-global/deployment/backups/claude-desktop/pre_deployment_20250920_175434.json",
+        "servers_count": 1
+      }
+    },
+    {
+      "timestamp": "2025-09-20T17:55:18.544789",
+      "action": "deploy",
+      "tool": "claude-desktop",
+      "details": {
+        "profile": "development",
+        "config_file": "/Users/mekonen/.mcp-global/generated/claude-desktop/development.json",
+        "tool_path": "/Users/mekonen/Library/Application Support/Claude/claude_desktop_config.json",
+        "backup_path": "/Users/mekonen/.mcp-global/deployment/backups/claude-desktop/pre_deployment_20250920_175518.json",
+        "servers_count": 1
+      }
+    },
+    {
+      "timestamp": "2025-09-20T17:55:18.628034",
+      "action": "deploy",
+      "tool": "claude-code",
+      "details": {
+        "profile": "development",
+        "config_file": "/Users/mekonen/.mcp-global/generated/claude-code/development.json",
+        "tool_path": "/Users/mekonen/.config/claude-code/mcp_servers.json",
+        "backup_path": "/Users/mekonen/.mcp-global/deployment/backups/claude-code/pre_deployment_20250920_175518.json",
+        "servers_count": 1
+      }
+    },
+    {
+      "timestamp": "2025-09-20T17:55:18.705443",
+      "action": "deploy",
+      "tool": "cursor",
+      "details": {
+        "profile": "development",
+        "config_file": "/Users/mekonen/.mcp-global/generated/cursor/development.json",
+        "tool_path": "/Users/mekonen/Library/Mobile Documents/com~apple~CloudDocs/Projects/MCPs/mcp.json",
+        "backup_path": null,
+        "servers_count": 1
+      }
+    },
+    {
+      "timestamp": "2025-09-20T17:56:03.997756",
+      "action": "deploy",
+      "tool": "claude-desktop",
+      "details": {
+        "profile": "productivity",
+        "config_file": "/Users/mekonen/.mcp-global/generated/claude-desktop/productivity.json",
+        "tool_path": "/Users/mekonen/Library/Application Support/Claude/claude_desktop_config.json",
+        "backup_path": "/Users/mekonen/.mcp-global/deployment/backups/claude-desktop/pre_deployment_20250920_175603.json",
+        "servers_count": 5
+      }
+    },
+    {
+      "timestamp": "2025-09-20T17:56:06.513764",
+      "action": "deploy",
+      "tool": "claude-code",
+      "details": {
+        "profile": "productivity",
+        "config_file": "/Users/mekonen/.mcp-global/generated/claude-code/productivity.json",
+        "tool_path": "/Users/mekonen/.config/claude-code/mcp_servers.json",
+        "backup_path": "/Users/mekonen/.mcp-global/deployment/backups/claude-code/pre_deployment_20250920_175606.json",
+        "servers_count": 5
+      }
+    },
+    {
+      "timestamp": "2025-09-20T17:57:57.698794",
+      "action": "deploy",
+      "tool": "claude-desktop",
+      "details": {
+        "profile": "default",
+        "config_file": "/Users/mekonen/.mcp-global/generated/claude-desktop/default.json",
+        "tool_path": "/Users/mekonen/Library/Application Support/Claude/claude_desktop_config.json",
+        "backup_path": "/Users/mekonen/.mcp-global/deployment/backups/claude-desktop/pre_deployment_20250920_175757.json",
+        "servers_count": 1
+      }
+    }
+  ],
+  "rollbacks": [
+    {
+      "timestamp": "2025-09-20T17:57:46.956241",
+      "action": "rollback",
+      "tool": "claude-desktop",
+      "details": {
+        "backup_file": "/Users/mekonen/.mcp-global/deployment/backups/claude-desktop/pre_deployment_20250920_175603.json",
+        "tool_path": "/Users/mekonen/Library/Application Support/Claude/claude_desktop_config.json"
+      }
+    }
+  ]
+}

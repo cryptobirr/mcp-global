@@ -1,0 +1,25 @@
+{
+  "name": "ynab-mcp-server",
+  "version": "0.1.0",
+  "description": "MCP Server for YNAB API",
+  "main": "build/index.js",
+  "type": "module",
+  "scripts": {
+    "build": "tsc && node -e \"require('fs').chmodSync('build/index.js', '755')\"",
+    "start": "node build/index.js"
+  },
+  "keywords": [
+    "mcp",
+    "ynab"
+  ],
+  "author": "Cline",
+  "license": "ISC",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.8.0",
+    "@types/node": "^22.13.14",
+    "axios": "^1.7.2"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0" 
+  }
+}

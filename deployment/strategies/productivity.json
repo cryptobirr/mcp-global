@@ -1,0 +1,22 @@
+{
+  "strategy_name": "productivity",
+  "description": "Productivity tools deployment with gmail, calendar, todoist, drive",
+  "risk_level": "medium",
+  "tools": {
+    "claude-desktop": {
+      "deploy": true,
+      "profile": "productivity",
+      "priority": 1,
+      "test_required": true
+    },
+    "claude-code": {
+      "deploy": true,
+      "profile": "productivity",
+      "priority": 2,
+      "test_required": true
+    }
+  },
+  "servers_included": ["filesystem", "gmail-mcp", "google-calendar-mcp", "new-google-calendar-mcp", "google-drive-mcp", "todoist-mcp-server"],
+  "rollback_trigger": "critical_failure",
+  "max_parallel_deployments": 1
+}

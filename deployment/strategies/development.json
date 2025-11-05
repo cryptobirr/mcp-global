@@ -1,0 +1,28 @@
+{
+  "strategy_name": "development",
+  "description": "Development tools deployment with postgres, github, and filesystem",
+  "risk_level": "medium",
+  "tools": {
+    "claude-desktop": {
+      "deploy": true,
+      "profile": "development",
+      "priority": 1,
+      "test_required": true
+    },
+    "claude-code": {
+      "deploy": true,
+      "profile": "development",
+      "priority": 2,
+      "test_required": true
+    },
+    "cursor": {
+      "deploy": true,
+      "profile": "development",
+      "priority": 3,
+      "test_required": false
+    }
+  },
+  "servers_included": ["filesystem", "postgres-mcp-server", "github", "event-logger-mcp-server"],
+  "rollback_trigger": "critical_failure",
+  "max_parallel_deployments": 1
+}

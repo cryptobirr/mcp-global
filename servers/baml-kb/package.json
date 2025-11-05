@@ -1,0 +1,23 @@
+{
+  "name": "baml-kb",
+  "version": "1.0.0",
+  "description": "Knowledge Base MCP server for baml-kb-data",
+  "main": "server.js",
+    "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^0.5.0"
+  },
+  "keywords": [
+    "mcp",
+    "knowledge-base",
+    "lancedb",
+    "vector-search",
+    "search",
+    "baml-kb-data"
+  ],
+  "author": "Knowledge Base MCP Generator",
+  "license": "MIT"
+}

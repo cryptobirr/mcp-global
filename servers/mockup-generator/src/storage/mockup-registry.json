@@ -1,0 +1,35 @@
+{
+  "_metadata": {
+    "description": "Registry of all registered mockup components",
+    "version": "1.0.0",
+    "lastUpdated": "2025-10-27T23:49:43Z"
+  },
+  "wwe-health": {
+    "4": [
+      {
+        "componentName": "LoginScreen",
+        "componentType": "react-native",
+        "filePath": "/Users/mekonen/.mcp-global/servers/mockup-generator/mockup-app/components/wwe-health/issue-4/LoginScreen.tsx",
+        "registeredAt": "2025-10-27T23:49:43Z"
+      },
+      {
+        "componentName": "SignupScreen",
+        "componentType": "react-native",
+        "filePath": "/Users/mekonen/.mcp-global/servers/mockup-generator/mockup-app/components/wwe-health/issue-4/SignupScreen.tsx",
+        "registeredAt": "2025-10-27T23:49:43Z"
+      },
+      {
+        "componentName": "BiometricPrompt",
+        "componentType": "react-native",
+        "filePath": "/Users/mekonen/.mcp-global/servers/mockup-generator/mockup-app/components/wwe-health/issue-4/BiometricPrompt.tsx",
+        "registeredAt": "2025-10-27T23:49:43Z"
+      },
+      {
+        "componentName": "PasswordResetScreen",
+        "componentType": "react-native",
+        "filePath": "/Users/mekonen/.mcp-global/servers/mockup-generator/mockup-app/components/wwe-health/issue-4/PasswordResetScreen.tsx",
+        "registeredAt": "2025-10-27T23:49:43Z"
+      }
+    ]
+  }
+}

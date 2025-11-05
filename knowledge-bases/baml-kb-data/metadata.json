@@ -1,0 +1,9 @@
+{
+  "created_at": "/Users/mekonen/.mcp-global/servers/knowledge-manager",
+  "embedding_model": "all-MiniLM-L6-v2",
+  "use_openai_embeddings": false,
+  "version": "2.0",
+  "documents": 100,
+  "source_url": "https://docs.boundaryml.com/guide/introduction/what-is-baml",
+  "max_pages": 100
+}

@@ -1,0 +1,19 @@
+{
+  "name": "mcp-reference-server",
+  "version": "1.0.0",
+  "description": "MCP Reference Server - Knowledge base for MCP setup and management",
+  "type": "module",
+  "main": "build/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node build/index.js",
+    "dev": "tsc && node build/index.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "latest"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0",
+    "@types/node": "^20.0.0"
+  }
+}

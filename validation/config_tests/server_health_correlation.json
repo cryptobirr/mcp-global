@@ -1,0 +1,185 @@
+{
+  "correlation_timestamp": "2025-09-20T17:40:09.732821",
+  "healthy_servers_used": [
+    "todoist-mcp-server",
+    "excel-mcp-server",
+    "pdf-mcp-server",
+    "youtube-mcp-server-new",
+    "youtube-mcp-server",
+    "filesystem"
+  ],
+  "unhealthy_servers_used": [
+    "gmail-mcp",
+    "google-calendar-mcp",
+    "new-google-calendar-mcp",
+    "google-drive-mcp",
+    "postgres-mcp-server",
+    "mcp-browser-use"
+  ],
+  "missing_servers_referenced": [],
+  "server_usage_by_profile": {
+    "cline/productivity": [
+      "gmail-mcp",
+      "google-calendar-mcp",
+      "new-google-calendar-mcp",
+      "google-drive-mcp",
+      "todoist-mcp-server"
+    ],
+    "cline/development": [
+      "postgres-mcp-server"
+    ],
+    "cline/media": [
+      "excel-mcp-server",
+      "pdf-mcp-server",
+      "youtube-mcp-server-new",
+      "youtube-mcp-server"
+    ],
+    "cline/database": [
+      "postgres-mcp-server"
+    ],
+    "cline/automation": [
+      "mcp-browser-use"
+    ],
+    "cline/default": [
+      "filesystem"
+    ],
+    "claude-code/productivity": [
+      "gmail-mcp",
+      "google-calendar-mcp",
+      "new-google-calendar-mcp",
+      "google-drive-mcp",
+      "todoist-mcp-server"
+    ],
+    "claude-code/development": [
+      "postgres-mcp-server"
+    ],
+    "claude-code/media": [
+      "excel-mcp-server",
+      "pdf-mcp-server",
+      "youtube-mcp-server-new",
+      "youtube-mcp-server"
+    ],
+    "claude-code/database": [
+      "postgres-mcp-server"
+    ],
+    "claude-code/automation": [
+      "mcp-browser-use"
+    ],
+    "claude-code/default": [
+      "filesystem"
+    ],
+    "cursor/productivity": [
+      "gmail-mcp",
+      "google-calendar-mcp",
+      "new-google-calendar-mcp",
+      "google-drive-mcp",
+      "todoist-mcp-server"
+    ],
+    "cursor/development": [
+      "postgres-mcp-server"
+    ],
+    "cursor/media": [
+      "excel-mcp-server",
+      "pdf-mcp-server",
+      "youtube-mcp-server-new",
+      "youtube-mcp-server"
+    ],
+    "cursor/database": [
+      "postgres-mcp-server"
+    ],
+    "cursor/automation": [
+      "mcp-browser-use"
+    ],
+    "cursor/default": [
+      "filesystem"
+    ],
+    "claude-desktop/productivity": [
+      "gmail-mcp",
+      "google-calendar-mcp",
+      "new-google-calendar-mcp",
+      "google-drive-mcp",
+      "todoist-mcp-server"
+    ],
+    "claude-desktop/development": [
+      "postgres-mcp-server"
+    ],
+    "claude-desktop/media": [
+      "excel-mcp-server",
+      "pdf-mcp-server",
+      "youtube-mcp-server-new",
+      "youtube-mcp-server"
+    ],
+    "claude-desktop/database": [
+      "postgres-mcp-server"
+    ],
+    "claude-desktop/automation": [
+      "mcp-browser-use"
+    ],
+    "claude-desktop/default": [
+      "filesystem"
+    ],
+    "continue/productivity": [
+      "gmail-mcp",
+      "google-calendar-mcp",
+      "new-google-calendar-mcp",
+      "google-drive-mcp",
+      "todoist-mcp-server"
+    ],
+    "continue/development": [
+      "postgres-mcp-server"
+    ],
+    "continue/media": [
+      "excel-mcp-server",
+      "pdf-mcp-server",
+      "youtube-mcp-server-new",
+      "youtube-mcp-server"
+    ],
+    "continue/database": [
+      "postgres-mcp-server"
+    ],
+    "continue/automation": [
+      "mcp-browser-use"
+    ],
+    "continue/default": [
+      "filesystem"
+    ]
+  },
+  "health_compliance_score": 0.46153846153846156,
+  "issues": [
+    "cline/productivity: Uses unhealthy server 'gmail-mcp'",
+    "cline/productivity: Uses unhealthy server 'google-calendar-mcp'",
+    "cline/productivity: Uses unhealthy server 'new-google-calendar-mcp'",
+    "cline/productivity: Uses unhealthy server 'google-drive-mcp'",
+    "cline/development: Uses unhealthy server 'postgres-mcp-server'",
+    "cline/database: Uses unhealthy server 'postgres-mcp-server'",
+    "cline/automation: Uses unhealthy server 'mcp-browser-use'",
+    "claude-code/productivity: Uses unhealthy server 'gmail-mcp'",
+    "claude-code/productivity: Uses unhealthy server 'google-calendar-mcp'",
+    "claude-code/productivity: Uses unhealthy server 'new-google-calendar-mcp'",
+    "claude-code/productivity: Uses unhealthy server 'google-drive-mcp'",
+    "claude-code/development: Uses unhealthy server 'postgres-mcp-server'",
+    "claude-code/database: Uses unhealthy server 'postgres-mcp-server'",
+    "claude-code/automation: Uses unhealthy server 'mcp-browser-use'",
+    "cursor/productivity: Uses unhealthy server 'gmail-mcp'",
+    "cursor/productivity: Uses unhealthy server 'google-calendar-mcp'",
+    "cursor/productivity: Uses unhealthy server 'new-google-calendar-mcp'",
+    "cursor/productivity: Uses unhealthy server 'google-drive-mcp'",
+    "cursor/development: Uses unhealthy server 'postgres-mcp-server'",
+    "cursor/database: Uses unhealthy server 'postgres-mcp-server'",
+    "cursor/automation: Uses unhealthy server 'mcp-browser-use'",
+    "claude-desktop/productivity: Uses unhealthy server 'gmail-mcp'",
+    "claude-desktop/productivity: Uses unhealthy server 'google-calendar-mcp'",
+    "claude-desktop/productivity: Uses unhealthy server 'new-google-calendar-mcp'",
+    "claude-desktop/productivity: Uses unhealthy server 'google-drive-mcp'",
+    "claude-desktop/development: Uses unhealthy server 'postgres-mcp-server'",
+    "claude-desktop/database: Uses unhealthy server 'postgres-mcp-server'",
+    "claude-desktop/automation: Uses unhealthy server 'mcp-browser-use'",
+    "continue/productivity: Uses unhealthy server 'gmail-mcp'",
+    "continue/productivity: Uses unhealthy server 'google-calendar-mcp'",
+    "continue/productivity: Uses unhealthy server 'new-google-calendar-mcp'",
+    "continue/productivity: Uses unhealthy server 'google-drive-mcp'",
+    "continue/development: Uses unhealthy server 'postgres-mcp-server'",
+    "continue/database: Uses unhealthy server 'postgres-mcp-server'",
+    "continue/automation: Uses unhealthy server 'mcp-browser-use'"
+  ]
+}

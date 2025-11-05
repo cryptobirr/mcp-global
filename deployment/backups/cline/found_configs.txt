@@ -1,0 +1,2 @@
+/Users/mekonen/Library/Application Support/Code/User/settings.json
+/Users/mekonen/.vscode/extensions/ms-python.python-2025.14.0-darwin-arm64/python_files/.vscode/settings.json

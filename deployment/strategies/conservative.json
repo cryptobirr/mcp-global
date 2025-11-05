@@ -1,0 +1,16 @@
+{
+  "strategy_name": "conservative",
+  "description": "Minimal deployment with only filesystem server for initial testing",
+  "risk_level": "low",
+  "tools": {
+    "claude-desktop": {
+      "deploy": true,
+      "profile": "default",
+      "priority": 1,
+      "test_required": true
+    }
+  },
+  "servers_included": ["filesystem"],
+  "rollback_trigger": "any_failure",
+  "max_parallel_deployments": 1
+}

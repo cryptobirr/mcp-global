@@ -1,0 +1,19 @@
+{
+  "servers": {
+    "example-weather": {
+      "name": "example-weather",
+      "category": "api",
+      "description": "Weather information and forecasts",
+      "path": "/path/to/weather-mcp",
+      "env": {
+        "WEATHER_API_KEY": "your-api-key-here"
+      }
+    },
+    "example-database": {
+      "name": "example-database",
+      "category": "database",
+      "description": "Database operations and queries",
+      "path": "/path/to/database-mcp"
+    }
+  }
+}

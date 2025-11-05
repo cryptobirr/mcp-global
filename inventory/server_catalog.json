@@ -1,0 +1,160 @@
+{
+  "inventory_created": "2025-09-20T17:06:41.866147",
+  "source_directory": "/Users/mekonen/Documents/Cline/MCP",
+  "total_servers": 17,
+  "servers": {
+    "excel-mcp-server": {
+      "name": "excel-mcp-server",
+      "path": "/Users/mekonen/Documents/Cline/MCP/excel-mcp-server",
+      "type": "nodejs",
+      "built": true,
+      "main_file": "/Users/mekonen/Documents/Cline/MCP/excel-mcp-server/build/index.js",
+      "size_mb": 64,
+      "last_modified": "2025-04-06T19:04:02.444928"
+    },
+    ".pytest_cache": {
+      "name": ".pytest_cache",
+      "path": "/Users/mekonen/Documents/Cline/MCP/.pytest_cache",
+      "type": "unknown",
+      "built": false,
+      "main_file": null,
+      "size_mb": 1,
+      "last_modified": "2025-06-19T17:34:06.371533"
+    },
+    "time-tracker-mcp-server": {
+      "name": "time-tracker-mcp-server",
+      "path": "/Users/mekonen/Documents/Cline/MCP/time-tracker-mcp-server",
+      "type": "nodejs",
+      "built": true,
+      "main_file": "/Users/mekonen/Documents/Cline/MCP/time-tracker-mcp-server/build/index.js",
+      "size_mb": 101,
+      "last_modified": "2025-04-21T21:20:12.016142"
+    },
+    "postgres-mcp-server": {
+      "name": "postgres-mcp-server",
+      "path": "/Users/mekonen/Documents/Cline/MCP/postgres-mcp-server",
+      "type": "nodejs",
+      "built": true,
+      "main_file": "/Users/mekonen/Documents/Cline/MCP/postgres-mcp-server/build/index.js",
+      "size_mb": 37,
+      "last_modified": "2025-03-31T18:19:31.125656"
+    },
+    "mcp-browser-use": {
+      "name": "mcp-browser-use",
+      "path": "/Users/mekonen/Documents/Cline/MCP/mcp-browser-use",
+      "type": "python",
+      "built": false,
+      "main_file": null,
+      "size_mb": 528,
+      "last_modified": "2025-03-31T20:10:49.135547"
+    },
+    "dropbox-mcp-server": {
+      "name": "dropbox-mcp-server",
+      "path": "/Users/mekonen/Documents/Cline/MCP/dropbox-mcp-server",
+      "type": "nodejs",
+      "built": true,
+      "main_file": "/Users/mekonen/Documents/Cline/MCP/dropbox-mcp-server/build/index.js",
+      "size_mb": 35,
+      "last_modified": "2025-04-05T20:45:26.397548"
+    },
+    "pdf-mcp-server": {
+      "name": "pdf-mcp-server",
+      "path": "/Users/mekonen/Documents/Cline/MCP/pdf-mcp-server",
+      "type": "nodejs",
+      "built": true,
+      "main_file": "/Users/mekonen/Documents/Cline/MCP/pdf-mcp-server/build/index.js",
+      "size_mb": 427,
+      "last_modified": "2025-06-16T18:20:16.139777"
+    },
+    "event-logger-mcp-server": {
+      "name": "event-logger-mcp-server",
+      "path": "/Users/mekonen/Documents/Cline/MCP/event-logger-mcp-server",
+      "type": "nodejs",
+      "built": true,
+      "main_file": "/Users/mekonen/Documents/Cline/MCP/event-logger-mcp-server/build/index.js",
+      "size_mb": 38,
+      "last_modified": "2025-05-03T08:52:04.774617"
+    },
+    "gmail-mcp": {
+      "name": "gmail-mcp",
+      "path": "/Users/mekonen/Documents/Cline/MCP/gmail-mcp",
+      "type": "nodejs",
+      "built": true,
+      "main_file": "/Users/mekonen/Documents/Cline/MCP/gmail-mcp/build/index.js",
+      "size_mb": 202,
+      "last_modified": "2025-05-25T19:27:32.520946"
+    },
+    "auth-scripts": {
+      "name": "auth-scripts",
+      "path": "/Users/mekonen/Documents/Cline/MCP/auth-scripts",
+      "type": "nodejs",
+      "built": false,
+      "main_file": null,
+      "size_mb": 115,
+      "last_modified": "2025-05-03T12:59:35.028826"
+    },
+    "google-calendar-mcp": {
+      "name": "google-calendar-mcp",
+      "path": "/Users/mekonen/Documents/Cline/MCP/google-calendar-mcp",
+      "type": "nodejs",
+      "built": true,
+      "main_file": "/Users/mekonen/Documents/Cline/MCP/google-calendar-mcp/build/index.js",
+      "size_mb": 155,
+      "last_modified": "2025-04-05T17:46:06.375257"
+    },
+    "new-google-calendar-mcp": {
+      "name": "new-google-calendar-mcp",
+      "path": "/Users/mekonen/Documents/Cline/MCP/new-google-calendar-mcp",
+      "type": "nodejs",
+      "built": true,
+      "main_file": "/Users/mekonen/Documents/Cline/MCP/new-google-calendar-mcp/build/index.js",
+      "size_mb": 158,
+      "last_modified": "2025-05-03T12:50:03.857110"
+    },
+    "google-drive-mcp": {
+      "name": "google-drive-mcp",
+      "path": "/Users/mekonen/Documents/Cline/MCP/google-drive-mcp",
+      "type": "nodejs",
+      "built": true,
+      "main_file": "/Users/mekonen/Documents/Cline/MCP/google-drive-mcp/build/index.js",
+      "size_mb": 155,
+      "last_modified": "2025-04-05T19:58:46.371367"
+    },
+    "youtube-mcp-server-new": {
+      "name": "youtube-mcp-server-new",
+      "path": "/Users/mekonen/Documents/Cline/MCP/youtube-mcp-server-new",
+      "type": "nodejs",
+      "built": true,
+      "main_file": "/Users/mekonen/Documents/Cline/MCP/youtube-mcp-server-new/dist/index.js",
+      "size_mb": 157,
+      "last_modified": "2025-08-14T17:55:04.439244"
+    },
+    "ynab-mcp-server": {
+      "name": "ynab-mcp-server",
+      "path": "/Users/mekonen/Documents/Cline/MCP/ynab-mcp-server",
+      "type": "nodejs",
+      "built": true,
+      "main_file": "/Users/mekonen/Documents/Cline/MCP/ynab-mcp-server/build/index.js",
+      "size_mb": 38,
+      "last_modified": "2025-03-31T19:40:42.221987"
+    },
+    "todoist-mcp-server": {
+      "name": "todoist-mcp-server",
+      "path": "/Users/mekonen/Documents/Cline/MCP/todoist-mcp-server",
+      "type": "nodejs",
+      "built": true,
+      "main_file": "/Users/mekonen/Documents/Cline/MCP/todoist-mcp-server/dist/index.js",
+      "size_mb": 38,
+      "last_modified": "2025-04-27T17:23:40.964848"
+    },
+    "youtube-mcp-server": {
+      "name": "youtube-mcp-server",
+      "path": "/Users/mekonen/Documents/Cline/MCP/youtube-mcp-server",
+      "type": "nodejs",
+      "built": true,
+      "main_file": "/Users/mekonen/Documents/Cline/MCP/youtube-mcp-server/build/index.js",
+      "size_mb": 29,
+      "last_modified": "2025-04-06T15:12:13.303456"
+    }
+  }
+}
