@@ -180,8 +180,12 @@ class YoutubeMcpServer {
           // Create write stream
           const writeStream = createWriteStream(absoluteOutputPath, { encoding: 'utf-8' });
 
+          // Capture stream errors for proper propagation
+          let streamError: Error | null = null;
+
           // Error handling: cleanup partial file on stream errors
           writeStream.on('error', async (err: Error) => {
+            streamError = err;
             console.error('Stream write error:', err);
 
             // Cleanup partial file
@@ -191,11 +195,6 @@ class YoutubeMcpServer {
             } catch (unlinkErr) {
               console.error('Failed to cleanup partial file:', unlinkErr);
             }
-
-            throw new McpError(
-              ErrorCode.InternalError,
-              `Failed to write transcript: ${err.message}`
-            );
           });
 
           // Write markdown header
@@ -228,8 +227,15 @@ class YoutubeMcpServer {
           // Close stream and wait for completion
           await new Promise<void>((resolve, reject) => {
             writeStream.end(() => {
-              console.error(`Transcript saved to: ${absoluteOutputPath}`);
-              resolve();
+              if (streamError) {
+                reject(new McpError(
+                  ErrorCode.InternalError,
+                  `Failed to write transcript: ${streamError.message}`
+                ));
+              } else {
+                console.error(`Transcript saved to: ${absoluteOutputPath}`);
+                resolve();
+              }
             });
             writeStream.on('error', reject);
           });
