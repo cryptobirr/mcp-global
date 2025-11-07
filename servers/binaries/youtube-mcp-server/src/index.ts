@@ -9,6 +9,7 @@ import {
 } from '@modelcontextprotocol/sdk/types.js';
 import { YoutubeTranscript } from 'youtube-transcript';
 import fs from 'fs/promises';
+import { createWriteStream } from 'fs';
 import path from 'path';
 import he from 'he'; // Import the 'he' library
 
@@ -127,50 +128,123 @@ class YoutubeMcpServer {
             };
           }
 
-          // 2. Format transcript to Markdown and generate title
+          // 2. Format transcript to Markdown and generate title/filename
           console.error('Formatting transcript and generating title...');
-          // Manually replace common apostrophe entities first, then decode others
-          const rawTranscriptText = transcriptEntries.map((entry) => entry.text).join(' ');
-          const preDecodedText = rawTranscriptText
+
+          // Configuration constants
+          const CHUNK_SIZE = 1000; // entries per batch
+          const PROGRESS_THRESHOLD = 5000; // when to show progress
+
+          // Memory monitoring (gated by DEBUG env var)
+          let memoryBefore: NodeJS.MemoryUsage | undefined;
+          if (process.env.DEBUG?.includes('memory')) {
+            memoryBefore = process.memoryUsage();
+            console.error(`Memory before streaming: ${Math.round(memoryBefore.heapUsed / 1024 / 1024)}MB`);
+          }
+
+          // Generate title from first entry only (avoid loading full transcript)
+          const firstEntryText = transcriptEntries[0]?.text || '';
+          const preDecodedFirstEntry = firstEntryText
               .replace(/&#39;/g, "'") // Replace numeric entity
               .replace(/'/g, "'"); // Replace named entity
-          // Use preDecodedText for filename generation, decode fully for content
-          const decodedTranscriptText = he.decode(preDecodedText);
+          const decodedFirstEntry = he.decode(preDecodedFirstEntry);
 
+          // Generate title from first ~10 words
+          const titleWords = decodedFirstEntry.split(' ').slice(0, 10).join(' ');
+          const title = titleWords ? titleWords.trim() + '...' : 'Transcript';
 
-          // Generate title from the first ~10 words of the *fully* decoded text
-          const titleWords = decodedTranscriptText.split(' ').slice(0, 10).join(' ');
-          const title = titleWords ? titleWords.trim() + '...' : 'Transcript'; // Add ellipsis if truncated
-
-          // Use *fully* decoded text for the file content
-          const markdownContent = `# ${title}\n\n${decodedTranscriptText}`;
-
-          // Generate a sanitized filename from the first ~5 words of the *pre-decoded* text
-          const filenameWords = preDecodedText.split(' ').slice(0, 5).join(' '); // Use preDecodedText here
+          // Generate sanitized filename from first ~5 words of first entry
+          const filenameWords = preDecodedFirstEntry.split(' ').slice(0, 5).join(' ');
           let baseFilename = filenameWords
               ? filenameWords
                   .trim()
                   .toLowerCase()
-                  // First, replace spaces with hyphens
                   .replace(/\s+/g, '-')
-                  // Then, remove any character that is NOT a letter, number, or hyphen
                   .replace(/[^a-z0-9-]/g, '')
-              : `transcript-${Date.now()}`; // Fallback filename
-          if (!baseFilename || baseFilename === '-') { // Handle cases where sanitization results in empty string or just hyphens
+              : `transcript-${Date.now()}`;
+          if (!baseFilename || baseFilename === '-') {
               baseFilename = `transcript-${Date.now()}`;
           }
           const finalFilename = `${baseFilename}.md`;
 
-          // Construct the final path using the original output_path's directory
+          // Construct final path
           const originalOutputDir = path.dirname(path.resolve(CLINE_CWD, output_path));
           const absoluteOutputPath = path.join(originalOutputDir, finalFilename);
-          const outputDir = path.dirname(absoluteOutputPath); // Should be the same as originalOutputDir
+          const outputDir = path.dirname(absoluteOutputPath);
 
           console.error(`Ensuring directory exists: ${outputDir}`);
           await fs.mkdir(outputDir, { recursive: true });
 
           console.error(`Saving transcript to: ${absoluteOutputPath}`);
-          await fs.writeFile(absoluteOutputPath, markdownContent, 'utf-8');
+
+          // Create write stream
+          const writeStream = createWriteStream(absoluteOutputPath, { encoding: 'utf-8' });
+
+          // Capture stream errors for proper propagation
+          let streamError: Error | null = null;
+
+          // Error handling: cleanup partial file on stream errors
+          writeStream.on('error', async (err: Error) => {
+            streamError = err;
+            console.error('Stream write error:', err);
+
+            // Cleanup partial file
+            try {
+              await fs.unlink(absoluteOutputPath);
+              console.error(`Cleaned up partial file: ${absoluteOutputPath}`);
+            } catch (unlinkErr) {
+              console.error('Failed to cleanup partial file:', unlinkErr);
+            }
+          });
+
+          // Write markdown header
+          writeStream.write(`# ${title}\n\n`);
+
+          // Process and write transcript in chunks
+          for (let i = 0; i < transcriptEntries.length; i += CHUNK_SIZE) {
+            const chunk = transcriptEntries.slice(i, i + CHUNK_SIZE);
+
+            // Decode chunk text (per entry to avoid large string concat)
+            const chunkText = chunk
+              .map(entry => {
+                const preDecoded = entry.text
+                  .replace(/&#39;/g, "'")
+                  .replace(/'/g, "'");
+                return he.decode(preDecoded);
+              })
+              .join(' ');
+
+            // Write chunk to stream
+            writeStream.write(chunkText + ' ');
+
+            // Progress logging every 5000 entries
+            if (transcriptEntries.length > PROGRESS_THRESHOLD && i > 0 && i % 5000 === 0) {
+              console.error(`Progress: ${i}/${transcriptEntries.length} entries`);
+            }
+          }
+
+          // Close stream and wait for completion
+          await new Promise<void>((resolve, reject) => {
+            writeStream.end(() => {
+              if (streamError) {
+                reject(new McpError(
+                  ErrorCode.InternalError,
+                  `Failed to write transcript: ${streamError.message}`
+                ));
+              } else {
+                console.error(`Transcript saved to: ${absoluteOutputPath}`);
+                resolve();
+              }
+            });
+            writeStream.on('error', reject);
+          });
+
+          // Memory monitoring (gated by DEBUG env var)
+          if (process.env.DEBUG?.includes('memory') && memoryBefore) {
+            const memoryAfter = process.memoryUsage();
+            console.error(`Memory after streaming: ${Math.round(memoryAfter.heapUsed / 1024 / 1024)}MB`);
+            console.error(`Peak memory delta: ${Math.round((memoryAfter.heapUsed - memoryBefore.heapUsed) / 1024 / 1024)}MB`);
+          }
 
           // 4. Return success message using the actual saved path relative to CWD
           const relativeSavedPath = path.relative(CLINE_CWD, absoluteOutputPath);
