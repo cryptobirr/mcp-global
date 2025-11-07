@@ -106,6 +106,8 @@ describe('YouTube Transcript Streaming', () => {
       const outputPath = path.join(TEST_OUTPUT_DIR, 'memory-test.md');
       const CHUNK_SIZE = 1000;
 
+      // Force GC before baseline to establish consistent starting point (if available)
+      if (global.gc) global.gc();
       const memBefore = process.memoryUsage();
 
       const writeStream = createWriteStream(outputPath, { encoding: 'utf-8' });
@@ -124,8 +126,10 @@ describe('YouTube Transcript Streaming', () => {
         writeStream.on('error', reject);
       });
 
+      // Force GC before final measurement to measure actual retained memory (if available)
+      if (global.gc) global.gc();
       const memAfter = process.memoryUsage();
-      const peakDelta = (memAfter.heapUsed - memBefore.heapUsed) / 1024 / 1024;
+      const peakDelta = Math.max(0, (memAfter.heapUsed - memBefore.heapUsed) / 1024 / 1024);
 
       expect(peakDelta).toBeLessThan(100);
     });

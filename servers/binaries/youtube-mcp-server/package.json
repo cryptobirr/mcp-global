@@ -15,7 +15,7 @@
     "prepare": "npm run build",
     "watch": "tsc --watch",
     "inspector": "npx @modelcontextprotocol/inspector build/index.js",
-    "test": "vitest run",
+    "test": "node --expose-gc ./node_modules/.bin/vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage"
   },
