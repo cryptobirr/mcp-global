@@ -15,6 +15,67 @@ import he from 'he'; // Import the 'he' library
 
 const CLINE_CWD = process.cwd();
 
+/**
+ * Validates output path to prevent path traversal attacks
+ * @param outputPath - User-provided output path
+ * @throws McpError if path validation fails
+ */
+function validateOutputPath(outputPath: string): void {
+  // Reject empty paths
+  if (!outputPath || outputPath.trim() === '') {
+    throw new McpError(
+      ErrorCode.InvalidParams,
+      'Path validation failed'
+    );
+  }
+
+  // Check for null bytes and dangerous characters
+  if (outputPath.includes('\0')) {
+    throw new McpError(
+      ErrorCode.InvalidParams,
+      'Path validation failed'
+    );
+  }
+
+  // Decode path and check for traversal attempts
+  const decodedPath = decodeURIComponent(outputPath);
+
+  // Check for any traversal sequences
+  if (decodedPath.includes('../') || decodedPath.includes('..\\')) {
+    throw new McpError(
+      ErrorCode.InvalidParams,
+      'Path validation failed'
+    );
+  }
+
+  // Check for absolute paths (both Unix and Windows)
+  if (path.isAbsolute(outputPath) || path.isAbsolute(decodedPath)) {
+    throw new McpError(
+      ErrorCode.InvalidParams,
+      'Path validation failed'
+    );
+  }
+
+  // Check for Windows drive letters
+  if (/^[A-Za-z]:/.test(outputPath) || /^[A-Za-z]:/.test(decodedPath)) {
+    throw new McpError(
+      ErrorCode.InvalidParams,
+      'Path validation failed'
+    );
+  }
+
+  // Resolve path against current working directory
+  const resolvedPath = path.resolve(CLINE_CWD, outputPath);
+
+  // Final check: ensure resolved path is within current working directory
+  if (!resolvedPath.startsWith(CLINE_CWD)) {
+    throw new McpError(
+      ErrorCode.InvalidParams,
+      'Path validation failed'
+    );
+  }
+}
+
 // Helper function to validate arguments for the tool
 const isValidGetTranscriptArgs = (
   args: any
@@ -182,6 +243,9 @@ class YoutubeMcpServer {
           }
           const finalFilename = `${baseFilename}.md`;
 
+          // Validate output path for security (prevent path traversal)
+          validateOutputPath(output_path);
+
           // Construct final path
           const originalOutputDir = path.dirname(path.resolve(CLINE_CWD, output_path));
           const absoluteOutputPath = path.join(originalOutputDir, finalFilename);
@@ -232,7 +296,7 @@ class YoutubeMcpServer {
             // Write chunk to stream
             writeStream.write(chunkText + ' ');
 
-            // Progress logging every 5000 entries (use PROGRESS_THRESHOLD constant for modulo check)
+          // Progress logging every 5000 entries (use PROGRESS_THRESHOLD constant for modulo check)
             if (transcriptEntries.length > PROGRESS_THRESHOLD && i > 0 && i % PROGRESS_THRESHOLD === 0) {
               console.error(`Progress: ${i}/${transcriptEntries.length} entries`);
             }
