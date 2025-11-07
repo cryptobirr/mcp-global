@@ -173,6 +173,48 @@ describe('YouTube Transcript Streaming', () => {
 
       expect(progressLogs.length).toBe(0);
     });
+
+    it('should skip progress log at i=0 position', () => {
+      const entries: TranscriptEntry[] = Array.from({ length: 10000 }, (_, i) => ({
+        text: `word${i}`,
+        duration: 1,
+        offset: i
+      }));
+
+      const CHUNK_SIZE = 1000;
+      const PROGRESS_THRESHOLD = 5000;
+      const progressLogs: string[] = [];
+
+      for (let i = 0; i < entries.length; i += CHUNK_SIZE) {
+        if (entries.length > PROGRESS_THRESHOLD && i > 0 && i % 5000 === 0) {
+          progressLogs.push(`Progress: ${i}/${entries.length} entries`);
+        }
+      }
+
+      expect(progressLogs.every(log => !log.includes('Progress: 0/'))).toBe(true);
+    });
+
+    it('should trigger progress logs correctly with CHUNK_SIZE=500', () => {
+      const entries: TranscriptEntry[] = Array.from({ length: 15000 }, (_, i) => ({
+        text: `word${i}`,
+        duration: 1,
+        offset: i
+      }));
+
+      const CHUNK_SIZE = 500;
+      const PROGRESS_THRESHOLD = 5000;
+      const progressLogs: string[] = [];
+
+      for (let i = 0; i < entries.length; i += CHUNK_SIZE) {
+        if (entries.length > PROGRESS_THRESHOLD && i > 0 && i % 5000 === 0) {
+          progressLogs.push(`Progress: ${i}/${entries.length} entries`);
+        }
+      }
+
+      expect(progressLogs).toContain('Progress: 5000/15000 entries');
+      expect(progressLogs).toContain('Progress: 10000/15000 entries');
+      expect(progressLogs.every(log => !log.match(/Progress: (4500|5500|9500)/))).toBe(true);
+    });
   });
 
   describe('Filename Generation', () => {
