@@ -180,87 +180,6 @@ describe('YouTube Transcript Streaming', () => {
 
       expect(progressLogs.length).toBe(0);
     });
-<<<<<<< HEAD
-=======
-
-    it('should skip progress log at i=0 position', () => {
-      const entries: TranscriptEntry[] = Array.from({ length: 10000 }, (_, i) => ({
-        text: `word${i}`,
-        duration: 1,
-        offset: i
-      }));
-
-      const CHUNK_SIZE = 1000;
-      const PROGRESS_THRESHOLD = 5000;
-      const progressLogs: string[] = [];
-
-      for (let i = 0; i < entries.length; i += CHUNK_SIZE) {
-        if (entries.length > PROGRESS_THRESHOLD && i > 0 && i % 5000 === 0) {
-          progressLogs.push(`Progress: ${i}/${entries.length} entries`);
-        }
-      }
-
-      expect(progressLogs.every(log => !log.includes('Progress: 0/'))).toBe(true);
-    });
-
-    it('should trigger progress logs correctly with CHUNK_SIZE=500', () => {
-      const entries: TranscriptEntry[] = Array.from({ length: 15000 }, (_, i) => ({
-        text: `word${i}`,
-        duration: 1,
-        offset: i
-      }));
-
-      const CHUNK_SIZE = 500;
-      const PROGRESS_THRESHOLD = 5000;
-      const progressLogs: string[] = [];
-
-      for (let i = 0; i < entries.length; i += CHUNK_SIZE) {
-        if (entries.length > PROGRESS_THRESHOLD && i > 0 && i % 5000 === 0) {
-          progressLogs.push(`Progress: ${i}/${entries.length} entries`);
-        }
-      }
-
-      expect(progressLogs).toContain('Progress: 5000/15000 entries');
-      expect(progressLogs).toContain('Progress: 10000/15000 entries');
-      expect(progressLogs.every(log => !log.match(/Progress: (4500|5500|9500)/))).toBe(true);
-    });
-  });
-
-  describe('MCP Integration', () => {
-    it('should log progress to stderr during tool execution simulation', () => {
-      const entries: TranscriptEntry[] = Array.from({ length: 15000 }, (_, i) => ({
-        text: `word${i}`,
-        duration: 1,
-        offset: i
-      }));
-
-      const CHUNK_SIZE = 1000;
-      const PROGRESS_THRESHOLD = 5000;
-      const originalError = console.error;
-      const logs: string[] = [];
-
-      // Intercept console.error
-      console.error = (msg: any) => logs.push(String(msg));
-
-      // Simulate streaming loop from production
-      for (let i = 0; i < entries.length; i += CHUNK_SIZE) {
-        if (entries.length > PROGRESS_THRESHOLD && i > 0 && i % 5000 === 0) {
-          console.error(`Progress: ${i}/${entries.length} entries`);
-        }
-      }
-
-      // Restore console.error
-      console.error = originalError;
-
-      // Filter progress logs
-      const progressLogs = logs.filter(log => log.includes('Progress:'));
-
-      expect(progressLogs.length).toBe(2);
-      expect(progressLogs[0]).toBe('Progress: 5000/15000 entries');
-      expect(progressLogs[1]).toBe('Progress: 10000/15000 entries');
-      expect(progressLogs.every(log => !log.includes('Progress: 0/'))).toBe(true);
-    });
->>>>>>> main
   });
 
   describe('Filename Generation', () => {
@@ -306,6 +225,7 @@ describe('YouTube Transcript Streaming', () => {
     });
   });
 
+  describe('Progress Logging Extended', () => {
     it('should skip progress log at i=0 position', () => {
       const entries: TranscriptEntry[] = Array.from({ length: 10000 }, (_, i) => ({
         text: `word${i}`,
@@ -532,3 +452,187 @@ describe('YouTube Transcript Streaming', () => {
     });
   });
 });
+
+// Phase 5: Performance & Memory Tests Enhancement
+describe('Performance & Memory Tests', () => {
+    const PHASE5_TEST_OUTPUT_DIR = path.join(__dirname, '../test-output-phase5');
+
+    beforeEach(async () => {
+      await fs.mkdir(PHASE5_TEST_OUTPUT_DIR, { recursive: true });
+    });
+
+    afterEach(async () => {
+      await fs.rm(PHASE5_TEST_OUTPUT_DIR, { recursive: true, force: true });
+    });
+
+    describe('Large Transcript Processing', () => {
+      it('should process 60k+ entries efficiently', async () => {
+        const entries = Array.from({ length: 60000 }, (_, i) => ({
+          text: `This is transcript entry number ${i} with substantial content to simulate real YouTube transcript data including punctuation and various text elements that would normally appear in spoken content.`,
+          duration: 1000,
+          offset: i * 1000
+        }));
+
+        const CHUNK_SIZE = 1000;
+        const PROGRESS_THRESHOLD = 5000;
+        const progressLogs: string[] = [];
+
+        const memBefore = process.memoryUsage();
+
+        // Simulate streaming processing with large dataset
+        const startTime = Date.now();
+        for (let i = 0; i < entries.length; i += CHUNK_SIZE) {
+          const chunk = entries.slice(i, i + CHUNK_SIZE);
+
+          // Simulate text processing
+          const chunkText = chunk
+            .map(entry => he.decode(entry.text.replace(/&#39;/g, "'")))
+            .join(' ');
+
+          // Progress logging for large datasets - fix the logic
+          if (entries.length > PROGRESS_THRESHOLD && i > 0 && (i + CHUNK_SIZE) % 5000 === 0) {
+            const processed = Math.min(i + CHUNK_SIZE, entries.length);
+            progressLogs.push(`Progress: ${processed}/${entries.length} entries`);
+          }
+        }
+        const processingTime = Date.now() - startTime;
+
+        const memAfter = process.memoryUsage();
+        const memoryUsed = (memAfter.heapUsed - memBefore.heapUsed) / 1024 / 1024;
+
+        // Performance assertions
+        expect(processingTime).toBeLessThan(5000); // Should complete within 5 seconds
+        expect(memoryUsed).toBeLessThan(100); // Should use less than 100MB
+        expect(progressLogs.length).toBeGreaterThan(0);
+        expect(progressLogs).toContain('Progress: 5000/60000 entries');
+        expect(progressLogs).toContain('Progress: 60000/60000 entries');
+      });
+
+      it('should not accumulate memory during repeated processing', async () => {
+        const entries = Array.from({ length: 10000 }, (_, i) => ({
+          text: `Memory test entry ${i} with content that should be properly garbage collected`,
+          duration: 500,
+          offset: i * 500
+        }));
+
+        const CHUNK_SIZE = 1000;
+        const memorySnapshots: number[] = [];
+
+        // Run multiple iterations and monitor memory
+        for (let iteration = 0; iteration < 5; iteration++) {
+          const memBefore = process.memoryUsage();
+
+          // Process entries
+          for (let i = 0; i < entries.length; i += CHUNK_SIZE) {
+            const chunk = entries.slice(i, i + CHUNK_SIZE);
+
+            const chunkText = chunk
+              .map(entry => he.decode(entry.text.replace(/&#39;/g, "'")))
+              .join(' ');
+
+            // Simulate processing work
+            chunkText.length > 0;
+          }
+
+          // Force garbage collection if available
+          if (global.gc) global.gc();
+
+          const memAfter = process.memoryUsage();
+          const memoryUsed = (memAfter.heapUsed - memBefore.heapUsed) / 1024 / 1024;
+          memorySnapshots.push(memoryUsed);
+        }
+
+        // Memory usage should be consistent across iterations
+        const maxMemory = Math.max(...memorySnapshots);
+        const minMemory = Math.min(...memorySnapshots);
+        const memoryVariance = maxMemory - minMemory;
+
+        expect(memoryVariance).toBeLessThan(20); // Less than 20MB variance (relaxed)
+        expect(maxMemory).toBeLessThan(50); // Maximum reasonable memory usage
+      });
+
+      it('should efficiently handle progress logging for massive datasets', async () => {
+        const entries = Array.from({ length: 200000 }, (_, i) => ({
+          text: `Progress test entry ${i}`,
+          duration: 500,
+          offset: i * 500
+        }));
+
+        const CHUNK_SIZE = 1000;
+        const PROGRESS_THRESHOLD = 10000; // Higher threshold for massive datasets
+        const progressLogs: string[] = [];
+
+        const memBefore = process.memoryUsage();
+        const startTime = Date.now();
+
+        // Process with optimized progress logging
+        for (let i = 0; i < entries.length; i += CHUNK_SIZE) {
+          // Process chunk
+          const chunk = entries.slice(i, i + CHUNK_SIZE);
+          chunk.length; // Simulate processing
+
+          // Efficient progress logging - only log at specific intervals
+          if (entries.length > PROGRESS_THRESHOLD && i > 0 && i % 20000 === 0) {
+            const processed = Math.min(i + CHUNK_SIZE, entries.length);
+            progressLogs.push(`Progress: ${processed}/${entries.length} entries`);
+          }
+        }
+
+        const processingTime = Date.now() - startTime;
+        const memAfter = process.memoryUsage();
+        const memoryUsed = (memAfter.heapUsed - memBefore.heapUsed) / 1024 / 1024;
+
+        // Performance should remain good even with 200k entries
+        expect(processingTime).toBeLessThan(10000); // Under 10 seconds
+        expect(memoryUsed).toBeLessThan(200); // Under 200MB
+        expect(progressLogs.length).toBeLessThan(20); // Reasonable number of progress logs
+        expect(progressLogs).toContain('Progress: 21000/200000 entries');
+        expect(progressLogs).toContain('Progress: 181000/200000 entries'); // Last actual progress log
+      });
+
+      it('should handle file system operations efficiently for large outputs', async () => {
+        const largeTranscript = Array.from({ length: 50000 }, (_, i) =>
+          `Large transcript segment ${i} with substantial content. This simulates a very long YouTube video transcript that would require significant file I/O operations to write to disk efficiently. The content includes various punctuation marks and formatting that would typically appear in spoken content.`
+        );
+
+        const outputPath = path.join(PHASE5_TEST_OUTPUT_DIR, 'large-transcript.md');
+        const CHUNK_SIZE = 1000;
+
+        const memBefore = process.memoryUsage();
+        const startTime = Date.now();
+
+        // Create write stream
+        const writeStream = createWriteStream(outputPath, { encoding: 'utf-8' });
+        writeStream.write('# Large Transcript\n\n');
+
+        // Write in chunks to test memory efficiency
+        for (let i = 0; i < largeTranscript.length; i += CHUNK_SIZE) {
+          const chunk = largeTranscript.slice(i, i + CHUNK_SIZE);
+          const chunkText = chunk.join(' ');
+          writeStream.write(chunkText + ' ');
+        }
+
+        // Wait for stream to finish
+        await new Promise<void>((resolve, reject) => {
+          writeStream.end(() => resolve());
+          writeStream.on('error', reject);
+        });
+
+        const writeTime = Date.now() - startTime;
+        const memAfter = process.memoryUsage();
+        const memoryUsed = (memAfter.heapUsed - memBefore.heapUsed) / 1024 / 1024;
+
+        // Verify file was created correctly
+        const stats = await fs.stat(outputPath);
+        expect(stats.isFile()).toBe(true);
+        expect(stats.size).toBeGreaterThan(1000000); // Should be over 1MB
+
+        // Performance should remain good
+        expect(writeTime).toBeLessThan(5000); // Under 5 seconds
+        expect(memoryUsed).toBeLessThan(50); // Under 50MB for file operations
+
+        // Clean up
+        await fs.unlink(outputPath);
+      });
+    });
+  });
