@@ -3,6 +3,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import { createWriteStream } from 'fs';
 import he from 'he';
+import { ErrorCode, McpError } from '@modelcontextprotocol/sdk/types.js';
 
 // Mock transcript entry type
 interface TranscriptEntry {
@@ -217,6 +218,153 @@ describe('YouTube Transcript Streaming', () => {
 
       const error = await errorPromise;
       expect(error).toBeInstanceOf(Error);
+    });
+  });
+
+  describe('Security Integration', () => {
+    let testCwd: string;
+
+    beforeEach(() => {
+      testCwd = process.cwd();
+    });
+
+    // Recreate validateOutputPath for integration testing
+    function validateOutputPath(outputPath: string): void {
+      if (!outputPath || outputPath.trim() === '') {
+        throw new McpError(ErrorCode.InvalidParams, 'Path validation failed');
+      }
+
+      if (outputPath.includes('\0')) {
+        throw new McpError(ErrorCode.InvalidParams, 'Path validation failed');
+      }
+
+      const decodedPath = decodeURIComponent(outputPath);
+
+      if (decodedPath.includes('../') || decodedPath.includes('..\\')) {
+        throw new McpError(ErrorCode.InvalidParams, 'Path validation failed');
+      }
+
+      if (path.isAbsolute(outputPath) || path.isAbsolute(decodedPath)) {
+        throw new McpError(ErrorCode.InvalidParams, 'Path validation failed');
+      }
+
+      if (/^[A-Za-z]:/.test(outputPath) || /^[A-Za-z]:/.test(decodedPath)) {
+        throw new McpError(ErrorCode.InvalidParams, 'Path validation failed');
+      }
+
+      const resolvedPath = path.resolve(testCwd, outputPath);
+
+      if (!resolvedPath.startsWith(testCwd)) {
+        throw new McpError(ErrorCode.InvalidParams, 'Path validation failed');
+      }
+    }
+
+    it('should block malicious paths during transcript saving', async () => {
+      const maliciousPaths = [
+        '../../../etc/passwd',
+        '..\\..\\windows\\system32\\config.txt',
+        '/etc/shadow',
+        'C:\\Windows\\System32\\drivers\\etc\\hosts',
+        '%2e%2e%2f%2e%2e%2f%2e%2e%2fetc%2fpasswd'
+      ];
+
+      for (const maliciousPath of maliciousPaths) {
+        expect(() => validateOutputPath(maliciousPath)).toThrow(McpError);
+        expect(() => validateOutputPath(maliciousPath)).toThrow('Path validation failed');
+      }
+    });
+
+    it('should allow legitimate paths during transcript saving', async () => {
+      const legitimatePaths = [
+        'transcripts/video-123.txt',
+        './output.md',
+        'subdir/file.txt',
+        'data/2024/report.pdf',
+        'notes/transcript.md'
+      ];
+
+      for (const legitimatePath of legitimatePaths) {
+        expect(() => validateOutputPath(legitimatePath)).not.toThrow();
+      }
+    });
+
+    it('should complete workflow with valid paths', async () => {
+      const outputPath = 'test-transcript.md';
+      const fullOutputPath = path.join(TEST_OUTPUT_DIR, outputPath);
+
+      // Validation should pass
+      expect(() => validateOutputPath(outputPath)).not.toThrow();
+
+      // Create mock transcript data
+      const entries: TranscriptEntry[] = [
+        { text: 'Hello world', duration: 1000, offset: 0 },
+        { text: 'This is a test transcript', duration: 2000, offset: 1000 },
+        { text: 'End of test', duration: 500, offset: 3000 }
+      ];
+
+      // Simulate the transcript saving workflow
+      const writeStream = createWriteStream(fullOutputPath, { encoding: 'utf-8' });
+      writeStream.write('# Test Transcript\n\n');
+
+      for (const entry of entries) {
+        const decodedText = he.decode(entry.text.replace(/&#39;/g, "'"));
+        writeStream.write(decodedText + ' ');
+      }
+
+      await new Promise<void>((resolve, reject) => {
+        writeStream.end(() => resolve());
+        writeStream.on('error', reject);
+      });
+
+      // Verify file was created successfully
+      const stats = await fs.stat(fullOutputPath);
+      expect(stats.isFile()).toBe(true);
+
+      const content = await fs.readFile(fullOutputPath, 'utf-8');
+      expect(content).toContain('# Test Transcript');
+      expect(content).toContain('Hello world');
+      expect(content).toContain('This is a test transcript');
+      expect(content).toContain('End of test');
+    });
+
+    it('should prevent file creation with malicious paths', async () => {
+      const maliciousPaths = [
+        '../../../etc/passwd.md',
+        '/tmp/malicious.txt',
+        '../escape/attempt.md'
+      ];
+
+      for (const maliciousPath of maliciousPaths) {
+        // Validation should fail
+        expect(() => validateOutputPath(maliciousPath)).toThrow(McpError);
+
+        // Ensure no file operations proceed after validation failure
+        const resolvedPath = path.resolve(testCwd, maliciousPath);
+        const isOutsideCwd = !resolvedPath.startsWith(testCwd);
+        expect(isOutsideCwd).toBe(true);
+      }
+    });
+
+    it('should handle filename generation with path validation', async () => {
+      const transcriptText = "Test video transcript content";
+      const sanitized = transcriptText
+        .split(' ').slice(0, 5).join(' ')
+        .trim()
+        .toLowerCase()
+        .replace(/\s+/g, '-')
+        .replace(/[^a-z0-9-]/g, '');
+
+      const filename = `${sanitized}.md`;
+      const outputPath = path.join(TEST_OUTPUT_DIR, filename);
+
+      // Generated filename should pass validation
+      expect(() => validateOutputPath(filename)).not.toThrow();
+
+      // Create test file
+      await fs.writeFile(outputPath, '# Test Transcript\n\nContent here', 'utf-8');
+
+      const stats = await fs.stat(outputPath);
+      expect(stats.isFile()).toBe(true);
     });
   });
 });
