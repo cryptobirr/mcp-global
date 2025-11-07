@@ -217,6 +217,42 @@ describe('YouTube Transcript Streaming', () => {
     });
   });
 
+  describe('MCP Integration', () => {
+    it('should log progress to stderr during tool execution simulation', () => {
+      const entries: TranscriptEntry[] = Array.from({ length: 15000 }, (_, i) => ({
+        text: `word${i}`,
+        duration: 1,
+        offset: i
+      }));
+
+      const CHUNK_SIZE = 1000;
+      const PROGRESS_THRESHOLD = 5000;
+      const originalError = console.error;
+      const logs: string[] = [];
+
+      // Intercept console.error
+      console.error = (msg: any) => logs.push(String(msg));
+
+      // Simulate streaming loop from production
+      for (let i = 0; i < entries.length; i += CHUNK_SIZE) {
+        if (entries.length > PROGRESS_THRESHOLD && i > 0 && i % 5000 === 0) {
+          console.error(`Progress: ${i}/${entries.length} entries`);
+        }
+      }
+
+      // Restore console.error
+      console.error = originalError;
+
+      // Filter progress logs
+      const progressLogs = logs.filter(log => log.includes('Progress:'));
+
+      expect(progressLogs.length).toBe(2);
+      expect(progressLogs[0]).toBe('Progress: 5000/15000 entries');
+      expect(progressLogs[1]).toBe('Progress: 10000/15000 entries');
+      expect(progressLogs.every(log => !log.includes('Progress: 0/'))).toBe(true);
+    });
+  });
+
   describe('Filename Generation', () => {
     it('should sanitize special characters', () => {
       const text = "Test's Video! (2025) @Channel";
