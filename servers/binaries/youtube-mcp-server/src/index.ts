@@ -218,9 +218,8 @@ class YoutubeMcpServer {
             writeStream.write(chunkText + ' ');
 
             // Progress logging every 5000 entries
-            if (transcriptEntries.length > PROGRESS_THRESHOLD && (i + CHUNK_SIZE) % 5000 === 0) {
-              const processed = Math.min(i + CHUNK_SIZE, transcriptEntries.length);
-              console.error(`Progress: ${processed}/${transcriptEntries.length} entries`);
+            if (transcriptEntries.length > PROGRESS_THRESHOLD && i > 0 && i % 5000 === 0) {
+              console.error(`Progress: ${i}/${transcriptEntries.length} entries`);
             }
           }
 
