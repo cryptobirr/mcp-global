@@ -180,23 +180,6 @@ class YoutubeMcpServer {
           // Create write stream
           const writeStream = createWriteStream(absoluteOutputPath, { encoding: 'utf-8' });
 
-          // Capture stream errors for proper propagation
-          let streamError: Error | null = null;
-
-          // Error handling: cleanup partial file on stream errors
-          writeStream.on('error', async (err: Error) => {
-            streamError = err;
-            console.error('Stream write error:', err);
-
-            // Cleanup partial file
-            try {
-              await fs.unlink(absoluteOutputPath);
-              console.error(`Cleaned up partial file: ${absoluteOutputPath}`);
-            } catch (unlinkErr) {
-              console.error('Failed to cleanup partial file:', unlinkErr);
-            }
-          });
-
           // Write markdown header
           writeStream.write(`# ${title}\n\n`);
 
@@ -227,17 +210,26 @@ class YoutubeMcpServer {
           // Close stream and wait for completion
           await new Promise<void>((resolve, reject) => {
             writeStream.end(() => {
-              if (streamError) {
-                reject(new McpError(
-                  ErrorCode.InternalError,
-                  `Failed to write transcript: ${streamError.message}`
-                ));
-              } else {
-                console.error(`Transcript saved to: ${absoluteOutputPath}`);
-                resolve();
-              }
+              console.error(`Transcript saved to: ${absoluteOutputPath}`);
+              resolve();
             });
-            writeStream.on('error', reject);
+
+            writeStream.on('error', async (err: Error) => {
+              console.error('Stream write error:', err);
+
+              // Cleanup partial file
+              try {
+                await fs.unlink(absoluteOutputPath);
+                console.error(`Cleaned up partial file: ${absoluteOutputPath}`);
+              } catch (unlinkErr) {
+                console.error('Failed to cleanup partial file:', unlinkErr);
+              }
+
+              reject(new McpError(
+                ErrorCode.InternalError,
+                `Failed to write transcript: ${err.message}`
+              ));
+            });
           });
 
           // Memory monitoring (gated by DEBUG env var)
