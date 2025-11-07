@@ -14,7 +14,11 @@
     "build": "tsc && node -e \"require('fs').chmodSync('build/index.js', '755')\"",
     "prepare": "npm run build",
     "watch": "tsc --watch",
-    "inspector": "npx @modelcontextprotocol/inspector build/index.js"
+    "inspector": "npx @modelcontextprotocol/inspector build/index.js",
+    "test": "node --expose-gc ./node_modules/.bin/vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "test:integration": "RUN_INTEGRATION_TESTS=true node --expose-gc ./node_modules/.bin/vitest run tests/integration"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "0.6.0",
@@ -23,7 +27,9 @@
   },
   "devDependencies": {
     "@types/he": "^1.2.3",
-    "@types/node": "^20.11.24",
-    "typescript": "^5.3.3"
+    "@types/node": "^20.19.24",
+    "@vitest/ui": "^4.0.7",
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.7"
   }
 }

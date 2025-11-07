@@ -1,0 +1,19 @@
+{
+  "issue_number": 14,
+  "issue_title": "[TEST-GAP] Stream error handler test doesn't verify cleanup logic",
+  "phase": "spec",
+  "spec": {
+    "current_version": 1,
+    "versions": [
+      {
+        "version": 1,
+        "created": "2025-11-07T04:05:17Z",
+        "file": "spec.md",
+        "approach": "BROWNFIELD",
+        "feature_type": "BACKEND",
+        "dod_score": 100,
+        "dod_status": "PASS"
+      }
+    ]
+  }
+}

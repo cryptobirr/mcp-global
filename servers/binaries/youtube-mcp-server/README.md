@@ -42,6 +42,45 @@ For development with auto-rebuild:
 npm run watch
 ```
 
+### Testing
+
+#### Unit Tests (Fast)
+
+Run unit tests:
+```bash
+npm test
+```
+
+**Memory Usage Tests**: To enable GC control for accurate memory measurements, run tests with the `--expose-gc` flag:
+```bash
+node --expose-gc ./node_modules/.bin/vitest run
+```
+
+This allows tests to force garbage collection before memory measurements, ensuring consistent results. Tests will gracefully degrade if `--expose-gc` is not provided.
+
+#### Integration Tests (Slow - requires real YouTube API calls)
+
+Run integration tests:
+```bash
+npm run test:integration
+```
+
+**Requirements:**
+- Stable internet connection
+- YouTube API accessible (no rate limiting)
+- Execution time: 5-10 minutes (processes real videos)
+
+**Environment Variables:**
+- `RUN_INTEGRATION_TESTS=true` - Enable integration tests (default: skip)
+
+**What Integration Tests Verify:**
+- AC1: 5hr video processing with <100MB peak memory
+- AC2: 6hr video processing with <100MB peak memory
+- AC5: 30min video baseline performance (no regression)
+- AC6: TranscriptsDisabled error handling
+
+**Note:** Integration tests use real YouTube videos and make actual API calls. They are automatically skipped during normal `npm test` runs to keep unit tests fast.
+
 ## Installation
 
 To use with Claude Desktop, add the server config:

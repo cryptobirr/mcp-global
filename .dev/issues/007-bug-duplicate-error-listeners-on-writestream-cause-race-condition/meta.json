@@ -1,0 +1,19 @@
+{
+  "issue_number": 7,
+  "issue_title": "[BUG] Duplicate error listeners on writeStream cause race condition",
+  "phase": "spec",
+  "spec": {
+    "current_version": 1,
+    "versions": [
+      {
+        "version": 1,
+        "created": "2025-11-06T00:00:00Z",
+        "file": "spec.md",
+        "approach": "BROWNFIELD",
+        "feature_type": "BACKEND",
+        "dod_score": 100,
+        "dod_status": "PASS"
+      }
+    ]
+  }
+}

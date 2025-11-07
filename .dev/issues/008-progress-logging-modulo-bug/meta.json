@@ -1,0 +1,19 @@
+{
+  "issue_number": 8,
+  "issue_title": "[BUG] Progress logging modulo arithmetic prevents expected output",
+  "phase": "spec",
+  "spec": {
+    "current_version": 1,
+    "versions": [
+      {
+        "version": 1,
+        "created": "2025-11-06T07:14:30Z",
+        "file": "spec.md",
+        "approach": "BROWNFIELD",
+        "feature_type": "BACKEND",
+        "dod_score": 100,
+        "dod_status": "PASS"
+      }
+    ]
+  }
+}

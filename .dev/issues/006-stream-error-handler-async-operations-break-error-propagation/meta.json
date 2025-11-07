@@ -1,0 +1,19 @@
+{
+  "issue_number": 6,
+  "issue_title": "[BUG] Stream error handler async operations break error propagation",
+  "phase": "spec",
+  "spec": {
+    "current_version": 1,
+    "versions": [
+      {
+        "version": 1,
+        "created": "2025-11-05T19:30:00Z",
+        "file": "spec-v1-2025-11-05T19:30:00Z.md",
+        "approach": "BROWNFIELD",
+        "feature_type": "BACKEND",
+        "dod_score": 100,
+        "dod_status": "PASS"
+      }
+    ]
+  }
+}
