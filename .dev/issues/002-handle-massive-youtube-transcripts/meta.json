@@ -1,0 +1,19 @@
+{
+  "issue_number": 2,
+  "issue_title": "[ENHANCEMENT] Handle massive YouTube transcripts (5-6 hours)",
+  "phase": "spec",
+  "spec": {
+    "current_version": 1,
+    "versions": [
+      {
+        "version": 1,
+        "created": "2025-11-06T00:06:54Z",
+        "file": "spec-v1-2025-11-06-000654.md",
+        "approach": "BROWNFIELD",
+        "feature_type": "BACKEND",
+        "dod_score": 100,
+        "dod_status": "PASS"
+      }
+    ]
+  }
+}

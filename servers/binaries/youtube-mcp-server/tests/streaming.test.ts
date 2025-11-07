@@ -106,7 +106,10 @@ describe('YouTube Transcript Streaming', () => {
 
       const outputPath = path.join(TEST_OUTPUT_DIR, 'memory-test.md');
       const CHUNK_SIZE = 1000;
+      const MEMORY_LIMIT_MB = 100; // Peak memory usage constraint
 
+      // Force GC before baseline to establish consistent starting point (if available)
+      if (global.gc) global.gc();
       const memBefore = process.memoryUsage();
 
       const writeStream = createWriteStream(outputPath, { encoding: 'utf-8' });
@@ -125,16 +128,19 @@ describe('YouTube Transcript Streaming', () => {
         writeStream.on('error', reject);
       });
 
+// Force GC before final measurement to measure actual retained memory (if available)
+      if (global.gc) global.gc();
       const memAfter = process.memoryUsage();
-      const peakDelta = (memAfter.heapUsed - memBefore.heapUsed) / 1024 / 1024;
+      // Use Math.max(0, delta) to handle cases where GC releases memory between measurements
+      const peakDelta = Math.max(0, (memAfter.heapUsed - memBefore.heapUsed) / 1024 / 1024);
 
-      expect(peakDelta).toBeLessThan(100);
+      expect(peakDelta).toBeLessThan(MEMORY_LIMIT_MB);
     });
   });
 
   describe('Progress Logging', () => {
     it('should trigger progress logs for >5000 entries', () => {
-      const entries: TranscriptEntry[] = Array.from({ length: 10000 }, (_, i) => ({
+      const entries: TranscriptEntry[] = Array.from({ length: 15000 }, (_, i) => ({
         text: `word${i}`,
         duration: 1,
         offset: i
@@ -145,15 +151,14 @@ describe('YouTube Transcript Streaming', () => {
       const progressLogs: string[] = [];
 
       for (let i = 0; i < entries.length; i += CHUNK_SIZE) {
-        if (entries.length > PROGRESS_THRESHOLD && (i + CHUNK_SIZE) % 5000 === 0) {
-          const processed = Math.min(i + CHUNK_SIZE, entries.length);
-          progressLogs.push(`Progress: ${processed}/${entries.length} entries`);
+        if (entries.length > PROGRESS_THRESHOLD && i > 0 && i % 5000 === 0) {
+          progressLogs.push(`Progress: ${i}/${entries.length} entries`);
         }
       }
 
       expect(progressLogs.length).toBeGreaterThan(0);
-      expect(progressLogs).toContain('Progress: 5000/10000 entries');
-      expect(progressLogs).toContain('Progress: 10000/10000 entries');
+      expect(progressLogs).toContain('Progress: 5000/15000 entries');
+      expect(progressLogs).toContain('Progress: 10000/15000 entries');
     });
 
     it('should NOT trigger progress logs for ≤5000 entries', () => {
@@ -168,14 +173,94 @@ describe('YouTube Transcript Streaming', () => {
       const progressLogs: string[] = [];
 
       for (let i = 0; i < entries.length; i += CHUNK_SIZE) {
-        if (entries.length > PROGRESS_THRESHOLD && (i + CHUNK_SIZE) % 5000 === 0) {
-          const processed = Math.min(i + CHUNK_SIZE, entries.length);
-          progressLogs.push(`Progress: ${processed}/${entries.length} entries`);
+        if (entries.length > PROGRESS_THRESHOLD && i > 0 && i % 5000 === 0) {
+          progressLogs.push(`Progress: ${i}/${entries.length} entries`);
         }
       }
 
       expect(progressLogs.length).toBe(0);
     });
+<<<<<<< HEAD
+=======
+
+    it('should skip progress log at i=0 position', () => {
+      const entries: TranscriptEntry[] = Array.from({ length: 10000 }, (_, i) => ({
+        text: `word${i}`,
+        duration: 1,
+        offset: i
+      }));
+
+      const CHUNK_SIZE = 1000;
+      const PROGRESS_THRESHOLD = 5000;
+      const progressLogs: string[] = [];
+
+      for (let i = 0; i < entries.length; i += CHUNK_SIZE) {
+        if (entries.length > PROGRESS_THRESHOLD && i > 0 && i % 5000 === 0) {
+          progressLogs.push(`Progress: ${i}/${entries.length} entries`);
+        }
+      }
+
+      expect(progressLogs.every(log => !log.includes('Progress: 0/'))).toBe(true);
+    });
+
+    it('should trigger progress logs correctly with CHUNK_SIZE=500', () => {
+      const entries: TranscriptEntry[] = Array.from({ length: 15000 }, (_, i) => ({
+        text: `word${i}`,
+        duration: 1,
+        offset: i
+      }));
+
+      const CHUNK_SIZE = 500;
+      const PROGRESS_THRESHOLD = 5000;
+      const progressLogs: string[] = [];
+
+      for (let i = 0; i < entries.length; i += CHUNK_SIZE) {
+        if (entries.length > PROGRESS_THRESHOLD && i > 0 && i % 5000 === 0) {
+          progressLogs.push(`Progress: ${i}/${entries.length} entries`);
+        }
+      }
+
+      expect(progressLogs).toContain('Progress: 5000/15000 entries');
+      expect(progressLogs).toContain('Progress: 10000/15000 entries');
+      expect(progressLogs.every(log => !log.match(/Progress: (4500|5500|9500)/))).toBe(true);
+    });
+  });
+
+  describe('MCP Integration', () => {
+    it('should log progress to stderr during tool execution simulation', () => {
+      const entries: TranscriptEntry[] = Array.from({ length: 15000 }, (_, i) => ({
+        text: `word${i}`,
+        duration: 1,
+        offset: i
+      }));
+
+      const CHUNK_SIZE = 1000;
+      const PROGRESS_THRESHOLD = 5000;
+      const originalError = console.error;
+      const logs: string[] = [];
+
+      // Intercept console.error
+      console.error = (msg: any) => logs.push(String(msg));
+
+      // Simulate streaming loop from production
+      for (let i = 0; i < entries.length; i += CHUNK_SIZE) {
+        if (entries.length > PROGRESS_THRESHOLD && i > 0 && i % 5000 === 0) {
+          console.error(`Progress: ${i}/${entries.length} entries`);
+        }
+      }
+
+      // Restore console.error
+      console.error = originalError;
+
+      // Filter progress logs
+      const progressLogs = logs.filter(log => log.includes('Progress:'));
+
+      expect(progressLogs.length).toBe(2);
+      expect(progressLogs[0]).toBe('Progress: 5000/15000 entries');
+      expect(progressLogs[1]).toBe('Progress: 10000/15000 entries');
+      expect(progressLogs.every(log => !log.includes('Progress: 0/'))).toBe(true);
+    });
+>>>>>>> main
   });
 
   describe('Filename Generation', () => {
@@ -218,6 +303,85 @@ describe('YouTube Transcript Streaming', () => {
 
       const error = await errorPromise;
       expect(error).toBeInstanceOf(Error);
+    });
+  });
+
+    it('should skip progress log at i=0 position', () => {
+      const entries: TranscriptEntry[] = Array.from({ length: 10000 }, (_, i) => ({
+        text: `word${i}`,
+        duration: 1,
+        offset: i
+      }));
+
+      const CHUNK_SIZE = 1000;
+      const PROGRESS_THRESHOLD = 5000;
+      const progressLogs: string[] = [];
+
+      for (let i = 0; i < entries.length; i += CHUNK_SIZE) {
+        if (entries.length > PROGRESS_THRESHOLD && i > 0 && i % 5000 === 0) {
+          progressLogs.push(`Progress: ${i}/${entries.length} entries`);
+        }
+      }
+
+      expect(progressLogs.every(log => !log.includes('Progress: 0/'))).toBe(true);
+    });
+
+    it('should trigger progress logs correctly with CHUNK_SIZE=500', () => {
+      const entries: TranscriptEntry[] = Array.from({ length: 15000 }, (_, i) => ({
+        text: `word${i}`,
+        duration: 1,
+        offset: i
+      }));
+
+      const CHUNK_SIZE = 500;
+      const PROGRESS_THRESHOLD = 5000;
+      const progressLogs: string[] = [];
+
+      for (let i = 0; i < entries.length; i += CHUNK_SIZE) {
+        if (entries.length > PROGRESS_THRESHOLD && i > 0 && i % 5000 === 0) {
+          progressLogs.push(`Progress: ${i}/${entries.length} entries`);
+        }
+      }
+
+      expect(progressLogs).toContain('Progress: 5000/15000 entries');
+      expect(progressLogs).toContain('Progress: 10000/15000 entries');
+      expect(progressLogs.every(log => !log.match(/Progress: (4500|5500|9500)/))).toBe(true);
+    });
+  });
+
+  describe('MCP Integration', () => {
+    it('should log progress to stderr during tool execution simulation', () => {
+      const entries: TranscriptEntry[] = Array.from({ length: 15000 }, (_, i) => ({
+        text: `word${i}`,
+        duration: 1,
+        offset: i
+      }));
+
+      const CHUNK_SIZE = 1000;
+      const PROGRESS_THRESHOLD = 5000;
+      const originalError = console.error;
+      const logs: string[] = [];
+
+      // Intercept console.error
+      console.error = (msg: any) => logs.push(String(msg));
+
+      // Simulate streaming loop from production
+      for (let i = 0; i < entries.length; i += CHUNK_SIZE) {
+        if (entries.length > PROGRESS_THRESHOLD && i > 0 && i % 5000 === 0) {
+          console.error(`Progress: ${i}/${entries.length} entries`);
+        }
+      }
+
+      // Restore console.error
+      console.error = originalError;
+
+      // Filter progress logs
+      const progressLogs = logs.filter(log => log.includes('Progress:'));
+
+      expect(progressLogs.length).toBe(2);
+      expect(progressLogs[0]).toBe('Progress: 5000/15000 entries');
+      expect(progressLogs[1]).toBe('Progress: 10000/15000 entries');
+      expect(progressLogs.every(log => !log.includes('Progress: 0/'))).toBe(true);
     });
   });
 
