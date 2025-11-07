@@ -374,5 +374,8 @@ class YoutubeMcpServer {
   }
 }
 
+// Export the class for testing
+export { YoutubeMcpServer };
+
 const server = new YoutubeMcpServer();
 server.run().catch(console.error);

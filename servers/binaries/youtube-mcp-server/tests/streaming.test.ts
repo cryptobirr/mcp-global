@@ -180,8 +180,6 @@ describe('YouTube Transcript Streaming', () => {
 
       expect(progressLogs.length).toBe(0);
     });
-<<<<<<< HEAD
-=======
 
     it('should skip progress log at i=0 position', () => {
       const entries: TranscriptEntry[] = Array.from({ length: 10000 }, (_, i) => ({
@@ -260,7 +258,6 @@ describe('YouTube Transcript Streaming', () => {
       expect(progressLogs[1]).toBe('Progress: 10000/15000 entries');
       expect(progressLogs.every(log => !log.includes('Progress: 0/'))).toBe(true);
     });
->>>>>>> main
   });
 
   describe('Filename Generation', () => {
@@ -306,6 +303,7 @@ describe('YouTube Transcript Streaming', () => {
     });
   });
 
+  describe('Progress Logging Extended', () => {
     it('should skip progress log at i=0 position', () => {
       const entries: TranscriptEntry[] = Array.from({ length: 10000 }, (_, i) => ({
         text: `word${i}`,
