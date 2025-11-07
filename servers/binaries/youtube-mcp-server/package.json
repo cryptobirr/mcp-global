@@ -28,6 +28,7 @@
   "devDependencies": {
     "@types/he": "^1.2.3",
     "@types/node": "^20.19.24",
+    "@vitest/coverage-v8": "^4.0.7",
     "@vitest/ui": "^4.0.7",
     "typescript": "^5.9.3",
     "vitest": "^4.0.7"

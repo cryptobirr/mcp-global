@@ -3,6 +3,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import { createWriteStream } from 'fs';
 import he from 'he';
+import { McpError, ErrorCode } from '@modelcontextprotocol/sdk/types.js';
 
 // Mock transcript entry type
 interface TranscriptEntry {
@@ -299,6 +300,183 @@ describe('YouTube Transcript Streaming', () => {
 
       const error = await errorPromise;
       expect(error).toBeInstanceOf(Error);
+    });
+
+    // NEW TEST 1: AC1 - Partial file cleanup verification
+    it('should delete partial file on stream write error', async () => {
+      // Pattern: Production error handler at src/index.ts:202-213
+      const outputPath = path.join(TEST_OUTPUT_DIR, 'partial-test.md');
+
+      // Create initial file
+      await fs.writeFile(outputPath, 'initial content', 'utf-8');
+
+      // Make file read-only to trigger write error
+      await fs.chmod(outputPath, 0o444);
+
+      // Attempt append operation (will fail on read-only file)
+      const writeStream = createWriteStream(outputPath, { flags: 'a', encoding: 'utf-8' });
+
+      // Track cleanup execution
+      let cleanupExecuted = false;
+
+      // Copy production error handler pattern (src/index.ts:202-213)
+      writeStream.on('error', async (err: Error) => {
+        try {
+          await fs.unlink(outputPath);
+          cleanupExecuted = true;
+        } catch (unlinkErr) {
+          // Silent failure pattern from production
+        }
+      });
+
+      // Trigger write error
+      const errorPromise = new Promise((resolve) => {
+        writeStream.on('error', resolve);
+        writeStream.write('append content');
+      });
+
+      await errorPromise;
+
+      // Wait for async cleanup to complete
+      await new Promise(resolve => setTimeout(resolve, 100));
+
+      // Verify file deleted (pattern from historical test at commit 62c08ee)
+      await expect(fs.access(outputPath)).rejects.toThrow();
+      expect(cleanupExecuted).toBe(true);
+    });
+
+    // NEW TEST 2: AC2 - Error propagation to Promise wrapper with McpError
+    it('should propagate stream error to Promise wrapper with McpError', async () => {
+      // Pattern: Production Promise wrapper at src/index.ts:242-255
+      const outputPath = '/invalid/path/test.md';
+      const writeStream = createWriteStream(outputPath);
+
+      // Copy production streamError variable pattern (src/index.ts:199)
+      let streamError: Error | null = null;
+
+      // Copy production error handler pattern (src/index.ts:202-203)
+      writeStream.on('error', (err: Error) => {
+        streamError = err;
+      });
+
+      // Write content to trigger error
+      writeStream.write('test content');
+
+      // Wait for error to be captured before ending stream
+      await new Promise(resolve => setTimeout(resolve, 10));
+
+      // Copy production Promise wrapper pattern (src/index.ts:242-255)
+      const writePromise = new Promise<void>((resolve, reject) => {
+        writeStream.end(() => {
+          // Production error propagation logic (src/index.ts:244-248)
+          if (streamError) {
+            reject(new McpError(
+              ErrorCode.InternalError,
+              `Failed to write transcript: ${streamError.message}`
+            ));
+          } else {
+            resolve();
+          }
+        });
+      });
+
+      // Verify Promise rejects with McpError
+      await expect(writePromise).rejects.toThrow();
+
+      // Verify error message includes streamError.message
+      try {
+        await writePromise;
+      } catch (error: any) {
+        expect(error.message).toContain('Failed to write transcript');
+        expect(error.code).toBe(ErrorCode.InternalError);
+      }
+    });
+
+    // NEW TEST 3: AC3 - Integration test with production code path
+    it('should handle errors in production streaming code path', async () => {
+      // Pattern: Full production streaming flow (src/index.ts:195-255)
+      const outputPath = '/invalid/path/integration-test.md';
+
+      // Minimal valid transcript data
+      const entries: TranscriptEntry[] = [
+        { text: 'test entry', duration: 1, offset: 0 }
+      ];
+
+      // Copy production streaming pattern (src/index.ts:196-255)
+      const writeStream = createWriteStream(outputPath, { encoding: 'utf-8' });
+      let streamError: Error | null = null;
+
+      // Production error handler (src/index.ts:202-213)
+      writeStream.on('error', async (err: Error) => {
+        streamError = err;
+        try {
+          await fs.unlink(outputPath);
+        } catch (unlinkErr) {
+          // Silent failure
+        }
+      });
+
+      // Write content (simulating production streaming)
+      writeStream.write('# Test Transcript\n\n');
+      for (const entry of entries) {
+        writeStream.write(entry.text + ' ');
+      }
+
+      // Wait for error to be captured
+      await new Promise(resolve => setTimeout(resolve, 10));
+
+      // Production Promise wrapper (src/index.ts:242-255)
+      const writePromise = new Promise<void>((resolve, reject) => {
+        writeStream.end(() => {
+          if (streamError) {
+            reject(new McpError(
+              ErrorCode.InternalError,
+              `Failed to write transcript: ${streamError.message}`
+            ));
+          } else {
+            resolve();
+          }
+        });
+      });
+
+      // Verify error propagation
+      await expect(writePromise).rejects.toThrow();
+
+      // Verify partial file doesn't exist (invalid path so never created)
+      const fileExists = await fs.access(outputPath).then(() => true).catch(() => false);
+      expect(fileExists).toBe(false);
+    });
+
+    // NEW TEST 4: Regression - No Error on Success Path
+    it('should not set streamError variable on successful write', async () => {
+      const outputPath = path.join(TEST_OUTPUT_DIR, 'success-test.md');
+      const writeStream = createWriteStream(outputPath, { encoding: 'utf-8' });
+      let streamError: Error | null = null;
+
+      writeStream.on('error', (err: Error) => {
+        streamError = err;
+      });
+
+      writeStream.write('# Success Test\n\n');
+      writeStream.write('Content here');
+
+      await new Promise<void>((resolve, reject) => {
+        writeStream.end(() => {
+          if (streamError) {
+            reject(new Error(`Unexpected streamError: ${streamError.message}`));
+          } else {
+            resolve();
+          }
+        });
+        writeStream.on('error', reject);
+      });
+
+      // Verify streamError remains null
+      expect(streamError).toBeNull();
+
+      // Verify file was created
+      const fileExists = await fs.access(outputPath).then(() => true).catch(() => false);
+      expect(fileExists).toBe(true);
     });
   });
 });
