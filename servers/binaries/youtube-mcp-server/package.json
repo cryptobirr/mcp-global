@@ -17,7 +17,8 @@
     "inspector": "npx @modelcontextprotocol/inspector build/index.js",
     "test": "node --expose-gc ./node_modules/.bin/vitest run",
     "test:watch": "vitest",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "test:integration": "RUN_INTEGRATION_TESTS=true node --expose-gc ./node_modules/.bin/vitest run tests/integration"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "0.6.0",
