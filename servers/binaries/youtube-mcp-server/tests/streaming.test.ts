@@ -105,6 +105,7 @@ describe('YouTube Transcript Streaming', () => {
 
       const outputPath = path.join(TEST_OUTPUT_DIR, 'memory-test.md');
       const CHUNK_SIZE = 1000;
+      const MEMORY_LIMIT_MB = 100; // Peak memory usage constraint
 
       // Force GC before baseline to establish consistent starting point (if available)
       if (global.gc) global.gc();
@@ -129,9 +130,10 @@ describe('YouTube Transcript Streaming', () => {
       // Force GC before final measurement to measure actual retained memory (if available)
       if (global.gc) global.gc();
       const memAfter = process.memoryUsage();
+      // Use Math.max(0, delta) to handle cases where GC releases memory between measurements
       const peakDelta = Math.max(0, (memAfter.heapUsed - memBefore.heapUsed) / 1024 / 1024);
 
-      expect(peakDelta).toBeLessThan(100);
+      expect(peakDelta).toBeLessThan(MEMORY_LIMIT_MB);
     });
   });
 

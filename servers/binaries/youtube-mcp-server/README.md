@@ -42,6 +42,20 @@ For development with auto-rebuild:
 npm run watch
 ```
 
+### Testing
+
+Run tests:
+```bash
+npm test
+```
+
+**Memory Usage Tests**: To enable GC control for accurate memory measurements, run tests with the `--expose-gc` flag:
+```bash
+node --expose-gc ./node_modules/.bin/vitest run
+```
+
+This allows tests to force garbage collection before memory measurements, ensuring consistent results. Tests will gracefully degrade if `--expose-gc` is not provided.
+
 ## Installation
 
 To use with Claude Desktop, add the server config:
