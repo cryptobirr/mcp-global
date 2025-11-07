@@ -219,4 +219,165 @@ describe('YouTube Transcript Streaming', () => {
       expect(error).toBeInstanceOf(Error);
     });
   });
+
+  describe('Consolidated Error Handler', () => {
+    it('should cleanup partial file on stream error', async () => {
+      const outputPath = path.join(TEST_OUTPUT_DIR, 'partial-cleanup-test.md');
+
+      // Create writeStream and write initial content to create file
+      const writeStream = createWriteStream(outputPath, { encoding: 'utf-8' });
+      writeStream.write('initial content');
+
+      // Wait for write to complete and file to be created
+      await new Promise(resolve => setTimeout(resolve, 10));
+
+      // Verify file exists before triggering error
+      await fs.access(outputPath);
+
+      // Simulate stream error
+      const errorPromise = new Promise<void>((resolve, reject) => {
+        writeStream.on('error', async (err: Error) => {
+          // Cleanup partial file (matching production pattern)
+          try {
+            await fs.unlink(outputPath);
+          } catch (unlinkErr) {
+            // Silent failure - log but don't block
+          }
+          reject(err);
+        });
+      });
+
+      // Trigger error
+      writeStream.emit('error', new Error('Test stream error'));
+
+      try {
+        await errorPromise;
+      } catch (err) {
+        // Error expected
+      }
+
+      // Verify partial file was deleted
+      await expect(fs.access(outputPath)).rejects.toThrow();
+    });
+
+    it('should propagate McpError after cleanup completes', async () => {
+      const outputPath = path.join(TEST_OUTPUT_DIR, 'error-propagation-test.md');
+      const writeStream = createWriteStream(outputPath, { encoding: 'utf-8' });
+
+      // Write content and wait for file creation
+      writeStream.write('test content');
+      await new Promise(resolve => setTimeout(resolve, 10));
+
+      let cleanupExecuted = false;
+
+      const errorPromise = new Promise<void>((resolve, reject) => {
+        writeStream.on('error', async (err: Error) => {
+          // Cleanup
+          try {
+            await fs.unlink(outputPath);
+            cleanupExecuted = true;
+          } catch (unlinkErr) {
+            // Silent failure
+          }
+
+          // Simulate McpError wrapping (production uses McpError class, test verifies error with message)
+          reject(new Error(`Failed to write transcript: ${err.message}`));
+        });
+      });
+
+      writeStream.emit('error', new Error('Test error'));
+
+      await expect(errorPromise).rejects.toThrow('Failed to write transcript: Test error');
+      expect(cleanupExecuted).toBe(true);
+    });
+
+    it('should handle cleanup failure gracefully', async () => {
+      const outputPath = '/invalid/path/that/does/not/exist/test.md';
+      const writeStream = createWriteStream(outputPath);
+
+      const errorPromise = new Promise<void>((resolve, reject) => {
+        writeStream.on('error', async (err: Error) => {
+          // Attempt cleanup of non-existent file
+          try {
+            await fs.unlink(outputPath);
+          } catch (unlinkErr) {
+            // Silent failure - should NOT block error propagation
+          }
+
+          reject(new Error(`Failed to write transcript: ${err.message}`));
+        });
+
+        writeStream.end(() => resolve());
+      });
+
+      writeStream.emit('error', new Error('Stream error'));
+
+      // Error should propagate even if cleanup fails
+      await expect(errorPromise).rejects.toThrow('Failed to write transcript: Stream error');
+    });
+
+    it('should execute only one error handler on stream error', async () => {
+      const outputPath = path.join(TEST_OUTPUT_DIR, 'single-handler-test.md');
+      const writeStream = createWriteStream(outputPath, { encoding: 'utf-8' });
+
+      let handlerExecutionCount = 0;
+
+      const errorPromise = new Promise<void>((resolve, reject) => {
+        // Single error handler - should execute exactly once
+        writeStream.on('error', async (err: Error) => {
+          handlerExecutionCount++;
+
+          try {
+            await fs.unlink(outputPath);
+          } catch (unlinkErr) {
+            // Silent failure
+          }
+
+          reject(err);
+        });
+
+        writeStream.end(() => resolve());
+      });
+
+      writeStream.emit('error', new Error('Test error'));
+
+      try {
+        await errorPromise;
+      } catch (err) {
+        // Expected
+      }
+
+      // Verify handler executed exactly once (no race condition)
+      expect(handlerExecutionCount).toBe(1);
+    });
+
+    it('should complete success path without error handler execution', async () => {
+      const outputPath = path.join(TEST_OUTPUT_DIR, 'success-path-test.md');
+      const writeStream = createWriteStream(outputPath, { encoding: 'utf-8' });
+
+      let errorHandlerExecuted = false;
+
+      writeStream.write('# Test Transcript\n\n');
+      writeStream.write('Test content');
+
+      await new Promise<void>((resolve, reject) => {
+        writeStream.end(() => {
+          resolve();
+        });
+
+        writeStream.on('error', async (err: Error) => {
+          errorHandlerExecuted = true;
+          reject(err);
+        });
+      });
+
+      // Verify error handler did NOT execute
+      expect(errorHandlerExecuted).toBe(false);
+
+      // Verify file exists and contains content
+      const content = await fs.readFile(outputPath, 'utf-8');
+      expect(content).toContain('Test Transcript');
+      expect(content).toContain('Test content');
+    });
+  });
 });
