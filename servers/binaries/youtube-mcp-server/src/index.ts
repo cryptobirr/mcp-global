@@ -12,7 +12,7 @@ import { RequestThrottler } from './throttle.js';
 import fs from 'fs/promises';
 import { createWriteStream } from 'fs';
 import path from 'path';
-import he from 'he'; // Import the 'he' library
+import he from 'he';
 
 const CLINE_CWD = process.cwd();
 
@@ -77,7 +77,7 @@ function validateOutputPath(outputPath: string): void {
   }
 }
 
-// Helper function to validate arguments for the tool
+// Helper function to validate arguments for the single transcript tool
 const isValidGetTranscriptArgs = (
   args: any
 ): args is { video_url: string; output_path: string } =>
@@ -85,6 +85,59 @@ const isValidGetTranscriptArgs = (
   args !== null &&
   typeof args.video_url === 'string' &&
   typeof args.output_path === 'string';
+
+/**
+ * Arguments for batch_get_transcripts tool
+ */
+interface BatchGetTranscriptsArgs {
+  video_urls: string[];
+  output_mode: 'aggregated' | 'individual';
+  output_path: string;
+}
+
+/**
+ * Type guard for batch_get_transcripts arguments
+ */
+const isValidBatchGetTranscriptsArgs = (
+  args: any
+): args is BatchGetTranscriptsArgs =>
+  typeof args === 'object' &&
+  args !== null &&
+  Array.isArray(args.video_urls) &&
+  args.video_urls.length >= 1 &&
+  args.video_urls.length <= 50 &&
+  args.video_urls.every((url: any) => typeof url === 'string') &&
+  (args.output_mode === 'aggregated' || args.output_mode === 'individual') &&
+  typeof args.output_path === 'string';
+
+/**
+ * Result of processing a single transcript
+ */
+interface TranscriptResult {
+  success: boolean;
+  videoUrl: string;
+  filePath?: string;
+  title?: string;
+  error?: string;
+  errorType?: ErrorType;
+}
+
+/**
+ * Categorized error types for transcript processing
+ */
+type ErrorType = 'TranscriptsDisabled' | 'NotFound' | 'RateLimit' | 'Unknown';
+
+/**
+ * Result of batch transcript processing
+ */
+interface BatchResult {
+  results: TranscriptResult[];
+  outputPath: string;
+  mode: 'aggregated' | 'individual';
+  totalVideos: number;
+  successfulVideos: number;
+  failedVideos: number;
+}
 
 class YoutubeMcpServer {
   private throttler = new RequestThrottler();
@@ -98,7 +151,7 @@ class YoutubeMcpServer {
       },
       {
         capabilities: {
-          resources: {}, // No resources defined for this server
+          resources: {},
           tools: {},
         },
       }
@@ -106,7 +159,6 @@ class YoutubeMcpServer {
 
     this.setupToolHandlers();
 
-    // Basic error handling and graceful shutdown
     this.server.onerror = (error) => console.error('[MCP Error]', error);
     process.on('SIGINT', async () => {
       await this.server.close();
@@ -138,154 +190,515 @@ class YoutubeMcpServer {
             required: ['video_url', 'output_path'],
           },
         },
+        {
+          name: 'batch_get_transcripts',
+          description: `Fetches transcripts for multiple YouTube videos with aggregated or individual output modes.
+
+Output Modes:
+- aggregated: Combines all transcripts into a single Markdown file with section markers
+- individual: Creates separate Markdown files for each video in the specified directory
+
+Features:
+- Batch size: 1-50 videos per call
+- Automatic throttling: Prevents YouTube rate limiting
+- Error isolation: Individual video failures don't halt batch processing
+- Detailed summary: Shows success/failure counts with specific error messages
+
+Performance:
+- Processing time: ~4 seconds per video (includes throttle delay)
+- Example: 10 video batch = ~40 seconds total
+
+Limitations:
+- Sequential processing (no parallelization)
+- Playlist URLs not supported (extract video URLs manually)`,
+          inputSchema: {
+            type: 'object',
+            properties: {
+              video_urls: {
+                type: 'array',
+                items: { type: 'string' },
+                description: 'List of YouTube video URLs to process (1-50 videos)',
+                minItems: 1,
+                maxItems: 50,
+              },
+              output_mode: {
+                type: 'string',
+                enum: ['aggregated', 'individual'],
+                description: 'Output mode: "aggregated" (single file) or "individual" (separate files)',
+              },
+              output_path: {
+                type: 'string',
+                description: 'File path for aggregated mode, directory path for individual mode',
+              },
+            },
+            required: ['video_urls', 'output_mode', 'output_path'],
+          },
+        },
       ],
     }));
 
-    // Handler to execute the tool
+    // Handler to execute tools
     this.server.setRequestHandler(
       CallToolRequestSchema,
       async (request) => {
-        if (request.params.name !== 'get_transcript_and_save') {
+        if (request.params.name === 'get_transcript_and_save') {
+          if (!isValidGetTranscriptArgs(request.params.arguments)) {
+            throw new McpError(
+              ErrorCode.InvalidParams,
+              'Invalid arguments for get_transcript_and_save. Requires "video_url" (string) and "output_path" (string).'
+            );
+          }
+
+          let { video_url, output_path } = request.params.arguments;
+
+          try {
+            const result = await this.processSingleTranscript(video_url, output_path);
+
+            if (result.success) {
+              return {
+                content: [{
+                  type: 'text',
+                  text: `Transcript saved successfully!\n\nFile: ${result.filePath}\nTitle: ${result.title}`,
+                }],
+              };
+            } else {
+              return {
+                content: [{ type: 'text', text: result.error || 'Failed to process transcript' }],
+                isError: true,
+              };
+            }
+          } catch (error: any) {
+            console.error('Error during transcript processing:', error);
+            return {
+              content: [{
+                type: 'text',
+                text: `Failed to process transcript for ${video_url}. Error: ${error.message}`,
+              }],
+              isError: true,
+            };
+          }
+        } else if (request.params.name === 'batch_get_transcripts') {
+          if (!isValidBatchGetTranscriptsArgs(request.params.arguments)) {
+            throw new McpError(
+              ErrorCode.InvalidParams,
+              'Invalid arguments for batch_get_transcripts. Required: video_urls (array, 1-50 items), output_mode ("aggregated" or "individual"), output_path (string)'
+            );
+          }
+
+          const { video_urls, output_mode, output_path } = request.params.arguments;
+
+          try {
+            const result = await this.processBatchTranscripts(
+              video_urls,
+              output_mode,
+              output_path
+            );
+
+            return this.formatBatchResponse(result);
+          } catch (error: any) {
+            console.error('Batch processing error:', error);
+            return {
+              content: [{
+                type: 'text',
+                text: `Batch processing failed: ${error.message}`,
+              }],
+              isError: true,
+            };
+          }
+        } else {
           throw new McpError(
             ErrorCode.MethodNotFound,
             `Unknown tool: ${request.params.name}`
           );
         }
+      }
+    );
+  }
 
-        if (!isValidGetTranscriptArgs(request.params.arguments)) {
-          throw new McpError(
-            ErrorCode.InvalidParams,
-            'Invalid arguments for get_transcript_and_save. Requires "video_url" (string) and "output_path" (string).'
-          );
+  /**
+   * Converts YouTube Shorts URLs to standard watch URLs
+   * @param url - YouTube video URL
+   * @returns Normalized URL
+   */
+  private normalizeYoutubeUrl(url: string): string {
+    const shortsRegex = /youtube\.com\/shorts\/([a-zA-Z0-9_-]+)/;
+    const match = url.match(shortsRegex);
+
+    if (match && match[1]) {
+      const videoId = match[1];
+      const standardUrl = `https://www.youtube.com/watch?v=${videoId}`;
+      console.error(`Detected Shorts URL. Converting to: ${standardUrl}`);
+      return standardUrl;
+    }
+
+    return url;
+  }
+
+  /**
+   * Extracts video ID from YouTube URL
+   * @param url - YouTube video URL
+   * @returns Video ID or null if not found
+   */
+  private extractVideoId(url: string): string | null {
+    // Standard URL: youtube.com/watch?v=VIDEO_ID
+    const standardMatch = url.match(/[?&]v=([a-zA-Z0-9_-]+)/);
+    if (standardMatch && standardMatch[1]) {
+      return standardMatch[1];
+    }
+
+    // Shorts URL: youtube.com/shorts/VIDEO_ID
+    const shortsMatch = url.match(/\/shorts\/([a-zA-Z0-9_-]+)/);
+    if (shortsMatch && shortsMatch[1]) {
+      return shortsMatch[1];
+    }
+
+    // Short URL: youtu.be/VIDEO_ID
+    const shortMatch = url.match(/youtu\.be\/([a-zA-Z0-9_-]+)/);
+    if (shortMatch && shortMatch[1]) {
+      return shortMatch[1];
+    }
+
+    return null;
+  }
+
+  /**
+   * Generates human-readable title and sanitized filename from transcript
+   * @param transcriptEntries - Array of transcript entries
+   * @returns Object with title (first 10 words) and filename (first 5 words, sanitized)
+   */
+  private generateTitleAndFilename(
+    transcriptEntries: any[]
+  ): { title: string; filename: string } {
+    const firstEntryText = transcriptEntries[0]?.text || '';
+
+    // Decode HTML entities
+    const preDecoded = firstEntryText
+      .replace(/&#39;/g, "'")
+      .replace(/'/g, "'");
+    const decodedFirstEntry = he.decode(preDecoded);
+
+    // Generate title (first 10 words)
+    const titleWords = decodedFirstEntry.split(' ').slice(0, 10).join(' ');
+    const title = titleWords ? titleWords.trim() + '...' : 'Transcript';
+
+    // Generate filename (first 5 words, sanitized)
+    const filenameWords = preDecoded.split(' ').slice(0, 5).join(' ');
+    let baseFilename = filenameWords
+      ? filenameWords
+          .trim()
+          .toLowerCase()
+          .replace(/\s+/g, '-')
+          .replace(/[^a-z0-9-]/g, '')
+      : `transcript-${Date.now()}`;
+
+    // Fallback for empty/invalid filenames
+    if (!baseFilename || baseFilename === '-') {
+      baseFilename = `transcript-${Date.now()}`;
+    }
+
+    const filename = `${baseFilename}.md`;
+
+    return { title, filename };
+  }
+
+  /**
+   * Constructs absolute output path from relative path and filename
+   * @param outputPath - Relative output path (file or directory)
+   * @param filename - Generated filename
+   * @returns Absolute file path
+   */
+  private constructOutputPath(outputPath: string, filename: string): string {
+    const originalOutputDir = path.dirname(path.resolve(CLINE_CWD, outputPath));
+    const absoluteOutputPath = path.join(originalOutputDir, filename);
+    return absoluteOutputPath;
+  }
+
+  /**
+   * Streams transcript to file with chunked processing (memory optimization)
+   * @param transcriptEntries - Array of transcript entries
+   * @param absolutePath - Absolute file path
+   * @param title - Video title for file header
+   */
+  private async streamTranscriptToFile(
+    transcriptEntries: any[],
+    absolutePath: string,
+    title: string
+  ): Promise<void> {
+    const CHUNK_SIZE = 1000;
+    const outputDir = path.dirname(absolutePath);
+
+    // Create output directory
+    await fs.mkdir(outputDir, { recursive: true });
+
+    // Create write stream
+    const writeStream = createWriteStream(absolutePath, { encoding: 'utf-8' });
+    let streamError: Error | null = null;
+
+    // Error handling: cleanup partial file
+    writeStream.on('error', async (err: Error) => {
+      streamError = err;
+      try {
+        await fs.unlink(absolutePath);
+      } catch (unlinkError) {
+        console.error('Failed to cleanup partial file:', unlinkError);
+      }
+    });
+
+    // Write header
+    writeStream.write(`# ${title}\n\n`);
+
+    // Write chunks (1000 entries per batch)
+    for (let i = 0; i < transcriptEntries.length; i += CHUNK_SIZE) {
+      const chunk = transcriptEntries.slice(i, i + CHUNK_SIZE);
+      const chunkText = chunk
+        .map(entry => {
+          const preDecoded = entry.text
+            .replace(/&#39;/g, "'")
+            .replace(/'/g, "'");
+          return he.decode(preDecoded);
+        })
+        .join(' ');
+
+      writeStream.write(chunkText + ' ');
+
+      // Progress logging for large transcripts
+      if (transcriptEntries.length > 5000 && i > 0 && i % 5000 === 0) {
+        console.error(`Progress: ${i}/${transcriptEntries.length} entries processed`);
+      }
+    }
+
+    // Close stream and await completion
+    await new Promise<void>((resolve, reject) => {
+      writeStream.end(() => {
+        if (streamError) {
+          reject(new McpError(
+            ErrorCode.InternalError,
+            `Failed to write transcript: ${streamError.message}`
+          ));
+        } else {
+          resolve();
         }
+      });
+      writeStream.on('error', reject);
+    });
+  }
 
-        let { video_url, output_path } = request.params.arguments;
+  /**
+   * Categorizes errors into specific types for actionable user feedback
+   * @param error - Caught error object
+   * @param videoUrl - Video URL for error message
+   * @returns Object with error message and type
+   */
+  private categorizeError(
+    error: any,
+    videoUrl: string
+  ): { message: string; type: ErrorType } {
+    const errorMessage = error.message?.toLowerCase() || '';
 
-        // Convert Shorts URL to standard watch URL if necessary
-        const shortsRegex = /youtube\.com\/shorts\/([a-zA-Z0-9_-]+)/;
-        const shortsMatch = video_url.match(shortsRegex);
-        if (shortsMatch && shortsMatch[1]) {
-          const videoId = shortsMatch[1];
-          const standardUrl = `https://www.youtube.com/watch?v=${videoId}`;
-          console.error(`Detected Shorts URL. Converting to: ${standardUrl}`);
-          video_url = standardUrl; // Use the converted URL
-        }
+    if (errorMessage.includes('transcriptsdisabled')) {
+      return {
+        message: `Transcripts are disabled for the video: ${videoUrl}`,
+        type: 'TranscriptsDisabled',
+      };
+    } else if (errorMessage.includes('could not find transcript')) {
+      return {
+        message: `Could not find a transcript for the video: ${videoUrl}`,
+        type: 'NotFound',
+      };
+    } else if (errorMessage.includes('429') || errorMessage.includes('rate limit')) {
+      return {
+        message: `Rate limit exceeded for ${videoUrl}`,
+        type: 'RateLimit',
+      };
+    } else {
+      return {
+        message: `Failed to process transcript for ${videoUrl}. Error: ${error.message || error}`,
+        type: 'Unknown',
+      };
+    }
+  }
 
+  /**
+   * Processes a single YouTube transcript with streaming optimization
+   * @param videoUrl - YouTube video URL (standard or Shorts format)
+   * @param outputPath - Relative path for transcript file
+   * @returns TranscriptResult with success status, file path, and optional error
+   */
+  private async processSingleTranscript(
+    videoUrl: string,
+    outputPath: string
+  ): Promise<TranscriptResult> {
+    try {
+      // 1. Normalize URL (Shorts → standard)
+      const normalizedUrl = this.normalizeYoutubeUrl(videoUrl);
+
+      // 2. Fetch transcript (with throttling)
+      console.error(`Fetching transcript for: ${normalizedUrl}`);
+      const transcriptEntries = await this.throttler.throttle(
+        () => YoutubeTranscript.fetchTranscript(normalizedUrl)
+      );
+
+      // 3. Validate transcript exists
+      if (!transcriptEntries || transcriptEntries.length === 0) {
+        return {
+          success: false,
+          videoUrl,
+          error: 'No transcript found or available for this video',
+          errorType: 'NotFound',
+        };
+      }
+
+      // 4. Generate title and filename
+      const { title, filename } = this.generateTitleAndFilename(transcriptEntries);
+
+      // 5. Validate and construct absolute path
+      validateOutputPath(outputPath);
+      const absolutePath = this.constructOutputPath(outputPath, filename);
+
+      // 6. Stream transcript to file
+      await this.streamTranscriptToFile(transcriptEntries, absolutePath, title);
+
+      console.error(`Transcript saved to: ${absolutePath}`);
+
+      return {
+        success: true,
+        videoUrl,
+        filePath: path.relative(CLINE_CWD, absolutePath),
+        title,
+      };
+    } catch (error: any) {
+      const { message, type } = this.categorizeError(error, videoUrl);
+      return {
+        success: false,
+        videoUrl,
+        error: message,
+        errorType: type,
+      };
+    }
+  }
+
+  /**
+   * Processes multiple YouTube transcripts in batch
+   * @param videoUrls - Array of YouTube video URLs (1-50)
+   * @param outputMode - Output mode: aggregated or individual
+   * @param outputPath - File path (aggregated) or directory path (individual)
+   * @returns BatchResult with processing summary
+   */
+  private async processBatchTranscripts(
+    videoUrls: string[],
+    outputMode: 'aggregated' | 'individual',
+    outputPath: string
+  ): Promise<BatchResult> {
+    const results: TranscriptResult[] = [];
+
+    if (outputMode === 'individual') {
+      // Validate directory path
+      validateOutputPath(outputPath);
+      const outputDir = path.resolve(CLINE_CWD, outputPath);
+
+      // Create output directory
+      await fs.mkdir(outputDir, { recursive: true });
+
+      // Process each video sequentially
+      for (let i = 0; i < videoUrls.length; i++) {
+        const url = videoUrls[i];
+
+        // Extract video ID for unique filename
+        const videoId = this.extractVideoId(url);
+        const filename = `transcript-${videoId || Date.now()}-${i}.md`;
+        const filePath = path.join(outputPath, filename);
+
+        console.error(`[Batch Progress] Processing video ${i + 1}/${videoUrls.length}: ${url}`);
 
         try {
-          /**
-           * Fetches and processes YouTube transcript using streaming to minimize memory usage.
-           *
-           * Process:
-           * 1. Fetch transcript entries from YouTube
-           * 2. Generate title and filename from first entry
-           * 3. Stream transcript to file in chunks (CHUNK_SIZE entries per batch)
-           * 4. Decode HTML entities during streaming
-           *
-           * Memory efficiency:
-           * - Processes transcript in 1000-entry chunks
-           * - Uses file streams instead of string concatenation
-           * - Keeps peak memory <100MB for 60k+ entry transcripts
-           */
-          console.error(`Fetching transcript for: ${video_url}`);
+          const result = await this.processSingleTranscript(url, filePath);
+          results.push(result);
+
+          console.error(
+            `[Batch Progress] Video ${i + 1}/${videoUrls.length}: ${result.success ? 'SUCCESS' : 'FAILED'}`
+          );
+        } catch (error: any) {
+          // Capture error but continue processing
+          results.push({
+            success: false,
+            videoUrl: url,
+            error: error.message || 'Unknown error',
+            errorType: 'Unknown',
+          });
+
+          console.error(`[Batch Progress] Video ${i + 1}/${videoUrls.length}: FAILED`);
+        }
+      }
+    } else {
+      // Aggregated mode: stream all transcripts to single file
+
+      // Validate file path
+      validateOutputPath(outputPath);
+      const absolutePath = path.resolve(CLINE_CWD, outputPath);
+      const outputDir = path.dirname(absolutePath);
+
+      // Create output directory
+      await fs.mkdir(outputDir, { recursive: true });
+
+      // Create write stream
+      const writeStream = createWriteStream(absolutePath, { encoding: 'utf-8' });
+
+      // Write header
+      const timestamp = new Date().toISOString();
+      writeStream.write(`# Batch Transcript: ${videoUrls.length} videos\n`);
+      writeStream.write(`**Created:** ${timestamp}\n`);
+      writeStream.write(`**Mode:** Aggregated\n\n`);
+
+      // Process each video sequentially
+      for (let i = 0; i < videoUrls.length; i++) {
+        const url = videoUrls[i];
+
+        console.error(`[Batch Progress] Processing video ${i + 1}/${videoUrls.length}: ${url}`);
+
+        // Write section separator
+        if (i > 0) {
+          writeStream.write(`\n---\n\n`);
+        }
+
+        try {
+          // Normalize URL
+          const normalizedUrl = this.normalizeYoutubeUrl(url);
+
+          // Fetch transcript (with throttling)
           const transcriptEntries = await this.throttler.throttle(
-            () => YoutubeTranscript.fetchTranscript(video_url)
+            () => YoutubeTranscript.fetchTranscript(normalizedUrl)
           );
 
           if (!transcriptEntries || transcriptEntries.length === 0) {
-            return {
-              content: [
-                {
-                  type: 'text',
-                  text: `No transcript found or available for ${video_url}`,
-                },
-              ],
-              isError: true,
-            };
+            // Write failure section
+            writeStream.write(`## Video ${i + 1}: No transcript available\n`);
+            writeStream.write(`**Source:** ${url}\n`);
+            writeStream.write(`**Status:** Failed\n`);
+            writeStream.write(`**Error:** No transcript found or available\n\n`);
+
+            results.push({
+              success: false,
+              videoUrl: url,
+              error: 'No transcript found or available',
+              errorType: 'NotFound',
+            });
+
+            console.error(`[Batch Progress] Video ${i + 1}/${videoUrls.length}: FAILED`);
+            continue;
           }
 
-          // 2. Format transcript to Markdown and generate title/filename
-          console.error('Formatting transcript and generating title...');
+          // Generate title
+          const { title } = this.generateTitleAndFilename(transcriptEntries);
 
-          // Configuration constants
-          // CHUNK_SIZE: Balance between memory efficiency (smaller chunks) and I/O overhead (fewer writes)
-          // 1000 entries keeps memory usage <100MB for 60k entry transcripts while minimizing disk I/O
-          const CHUNK_SIZE = 1000; // entries per batch
-          const PROGRESS_THRESHOLD = 5000; // when to show progress
+          // Write success section header
+          writeStream.write(`## Video ${i + 1}: ${title}\n`);
+          writeStream.write(`**Source:** ${url}\n`);
+          writeStream.write(`**Status:** Success\n\n`);
 
-          // Memory monitoring (gated by DEBUG env var)
-          let memoryBefore: NodeJS.MemoryUsage | undefined;
-          if (process.env.DEBUG?.includes('memory')) {
-            memoryBefore = process.memoryUsage();
-            console.error(`Memory before streaming: ${Math.round(memoryBefore.heapUsed / 1024 / 1024)}MB`);
-          }
-
-          // Generate title from first entry only (avoid loading full transcript)
-          const firstEntryText = transcriptEntries[0]?.text || '';
-          const preDecodedFirstEntry = firstEntryText
-              .replace(/&#39;/g, "'") // Replace numeric entity
-              .replace(/'/g, "'"); // Replace named entity
-          const decodedFirstEntry = he.decode(preDecodedFirstEntry);
-
-          // Generate title from first ~10 words
-          const titleWords = decodedFirstEntry.split(' ').slice(0, 10).join(' ');
-          const title = titleWords ? titleWords.trim() + '...' : 'Transcript';
-
-          // Generate sanitized filename from first ~5 words of first entry
-          const filenameWords = preDecodedFirstEntry.split(' ').slice(0, 5).join(' ');
-          let baseFilename = filenameWords
-              ? filenameWords
-                  .trim()
-                  .toLowerCase()
-                  .replace(/\s+/g, '-')
-                  .replace(/[^a-z0-9-]/g, '')
-              : `transcript-${Date.now()}`;
-          if (!baseFilename || baseFilename === '-') {
-              baseFilename = `transcript-${Date.now()}`;
-          }
-          const finalFilename = `${baseFilename}.md`;
-
-          // Validate output path for security (prevent path traversal)
-          validateOutputPath(output_path);
-
-          // Construct final path
-          const originalOutputDir = path.dirname(path.resolve(CLINE_CWD, output_path));
-          const absoluteOutputPath = path.join(originalOutputDir, finalFilename);
-          const outputDir = path.dirname(absoluteOutputPath);
-
-          console.error(`Ensuring directory exists: ${outputDir}`);
-          await fs.mkdir(outputDir, { recursive: true });
-
-          console.error(`Saving transcript to: ${absoluteOutputPath}`);
-
-          // Create write stream
-          const writeStream = createWriteStream(absoluteOutputPath, { encoding: 'utf-8' });
-
-          // Capture stream errors for proper propagation
-          let streamError: Error | null = null;
-
-          // Error handling: cleanup partial file on stream errors
-          writeStream.on('error', async (err: Error) => {
-            streamError = err;
-            console.error('Stream write error:', err);
-
-            // Cleanup partial file
-            try {
-              await fs.unlink(absoluteOutputPath);
-              console.error(`Cleaned up partial file: ${absoluteOutputPath}`);
-            } catch (unlinkErr) {
-              console.error('Failed to cleanup partial file:', unlinkErr);
-            }
-          });
-
-          // Write markdown header
-          writeStream.write(`# ${title}\n\n`);
-
-          // Process and write transcript in chunks
-          for (let i = 0; i < transcriptEntries.length; i += CHUNK_SIZE) {
-            const chunk = transcriptEntries.slice(i, i + CHUNK_SIZE);
-
-            // Decode chunk text (per entry to avoid large string concat)
+          // Write transcript content (chunked)
+          const CHUNK_SIZE = 1000;
+          for (let j = 0; j < transcriptEntries.length; j += CHUNK_SIZE) {
+            const chunk = transcriptEntries.slice(j, j + CHUNK_SIZE);
             const chunkText = chunk
               .map(entry => {
                 const preDecoded = entry.text
@@ -295,78 +708,92 @@ class YoutubeMcpServer {
               })
               .join(' ');
 
-            // Write chunk to stream
             writeStream.write(chunkText + ' ');
-
-          // Progress logging every 5000 entries (use PROGRESS_THRESHOLD constant for modulo check)
-            if (transcriptEntries.length > PROGRESS_THRESHOLD && i > 0 && i % PROGRESS_THRESHOLD === 0) {
-              console.error(`Progress: ${i}/${transcriptEntries.length} entries`);
-            }
           }
 
-          // Close stream and wait for completion
-          await new Promise<void>((resolve, reject) => {
-            writeStream.end(() => {
-              if (streamError) {
-                reject(new McpError(
-                  ErrorCode.InternalError,
-                  `Failed to write transcript: ${streamError.message}`
-                ));
-              } else {
-                console.error(`Transcript saved to: ${absoluteOutputPath}`);
-                resolve();
-              }
-            });
-            writeStream.on('error', reject);
+          writeStream.write(`\n`);
+
+          results.push({
+            success: true,
+            videoUrl: url,
+            filePath: path.relative(CLINE_CWD, absolutePath),
+            title,
           });
 
-          // Memory monitoring (gated by DEBUG env var)
-          if (process.env.DEBUG?.includes('memory') && memoryBefore) {
-            const memoryAfter = process.memoryUsage();
-            console.error(`Memory after streaming: ${Math.round(memoryAfter.heapUsed / 1024 / 1024)}MB`);
-            console.error(`Peak memory delta: ${Math.round((memoryAfter.heapUsed - memoryBefore.heapUsed) / 1024 / 1024)}MB`);
-          }
-
-          // 4. Return success message using the actual saved path relative to CWD
-          const relativeSavedPath = path.relative(CLINE_CWD, absoluteOutputPath);
-          return {
-            content: [
-              {
-                type: 'text',
-                text: `Transcript successfully saved to ${relativeSavedPath}`,
-              },
-            ],
-          };
+          console.error(`[Batch Progress] Video ${i + 1}/${videoUrls.length}: SUCCESS`);
         } catch (error: any) {
-          console.error('Error during transcript processing:', error);
-          // Handle specific youtube-transcript errors if needed, otherwise generic error
-          let errorMessage = `Failed to process transcript for ${video_url}.`;
-          if (error instanceof Error) {
-            errorMessage += ` Error: ${error.message}`;
-          } else if (typeof error === 'string') {
-             errorMessage += ` Error: ${error}`;
-          }
+          // Write failure section
+          const { message, type } = this.categorizeError(error, url);
 
-          // Check if it's a "TranscriptsDisabled" error specifically
-          if (error.message?.includes('TranscriptsDisabled')) {
-             errorMessage = `Transcripts are disabled for the video: ${video_url}`;
-          } else if (error.message?.includes('Could not find transcript')) {
-             errorMessage = `Could not find a transcript for the video: ${video_url}`;
-          }
+          writeStream.write(`## Video ${i + 1}: Processing failed\n`);
+          writeStream.write(`**Source:** ${url}\n`);
+          writeStream.write(`**Status:** Failed\n`);
+          writeStream.write(`**Error:** ${message}\n\n`);
 
+          results.push({
+            success: false,
+            videoUrl: url,
+            error: message,
+            errorType: type,
+          });
 
-          return {
-            content: [
-              {
-                type: 'text',
-                text: errorMessage,
-              },
-            ],
-            isError: true,
-          };
+          console.error(`[Batch Progress] Video ${i + 1}/${videoUrls.length}: FAILED`);
         }
       }
-    );
+
+      // Close stream
+      await new Promise<void>((resolve, reject) => {
+        writeStream.end(() => resolve());
+        writeStream.on('error', reject);
+      });
+
+      console.error(`Aggregated batch transcript saved to: ${absolutePath}`);
+    }
+
+    return {
+      results,
+      outputPath,
+      mode: outputMode,
+      totalVideos: videoUrls.length,
+      successfulVideos: results.filter(r => r.success).length,
+      failedVideos: results.filter(r => !r.success).length,
+    };
+  }
+
+  /**
+   * Formats batch processing result as MCP response
+   * @param result - BatchResult from processing
+   * @returns MCP response object
+   */
+  private formatBatchResponse(result: BatchResult): object {
+    const successList = result.results
+      .filter(r => r.success)
+      .map(r => `✓ ${r.filePath}`)
+      .join('\n');
+
+    const failureList = result.results
+      .filter(r => !r.success)
+      .map(r => `✗ ${r.videoUrl}: ${r.error}`)
+      .join('\n');
+
+    let responseText = `Batch processing complete:\n`;
+    responseText += `- Total: ${result.totalVideos} videos\n`;
+    responseText += `- Successful: ${result.successfulVideos} transcripts\n`;
+    responseText += `- Failed: ${result.failedVideos} transcripts\n\n`;
+
+    if (result.successfulVideos > 0) {
+      responseText += `Successful transcripts:\n${successList}\n\n`;
+    }
+
+    if (result.failedVideos > 0) {
+      responseText += `Failed transcripts:\n${failureList}\n\n`;
+    }
+
+    responseText += `Output: ${result.outputPath} (${result.mode} mode)`;
+
+    return {
+      content: [{ type: 'text', text: responseText }],
+    };
   }
 
   async run() {

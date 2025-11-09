@@ -1,86 +1,117 @@
 # youtube-mcp-server MCP Server
 
-A Model Context Protocol server
+A Model Context Protocol server for fetching and saving YouTube video transcripts.
 
-This is a TypeScript-based MCP server that implements a simple notes system. It demonstrates core MCP concepts by providing:
-
-- Resources representing text notes with URIs and metadata
-- Tools for creating new notes
-- Prompts for generating summaries of notes
+This is a TypeScript-based MCP server that provides tools for downloading YouTube video transcripts with memory-optimized streaming processing.
 
 ## Features
 
-### Resources
-- List and access notes via `note://` URIs
-- Each note has a title, content and metadata
-- Plain text mime type for simple content access
-
 ### Tools
-- `create_note` - Create new text notes
-  - Takes title and content as required parameters
-  - Stores note in server state
 
-### Prompts
-- `summarize_notes` - Generate a summary of all stored notes
-  - Includes all note contents as embedded resources
-  - Returns structured prompt for LLM summarization
+#### 1. `get_transcript_and_save`
+Fetches the transcript for a single YouTube video and saves it as a Markdown file.
 
-## Development
+**Parameters:**
+- `video_url` (string, required): Full URL of the YouTube video
+- `output_path` (string, required): Local file path where transcript should be saved
 
-Install dependencies:
-```bash
-npm install
+**Example:**
+```json
+{
+  "video_url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+  "output_path": "transcripts/video.md"
+}
 ```
 
-Build the server:
-```bash
-npm run build
+#### 2. `batch_get_transcripts` (NEW)
+Fetches transcripts for multiple YouTube videos in a single operation with aggregated or individual output modes.
+
+**Parameters:**
+- `video_urls` (array of strings, required): List of YouTube video URLs (1-50 videos)
+- `output_mode` (string, required): Output mode - `aggregated` (single file) or `individual` (separate files)
+- `output_path` (string, required): File path for aggregated mode, directory path for individual mode
+
+**Output Modes:**
+- **aggregated**: Combines all transcripts into a single Markdown file with section markers
+- **individual**: Creates separate Markdown files for each video in the specified directory
+
+**Features:**
+- Batch size: 1-50 videos per call
+- Automatic throttling: Prevents YouTube rate limiting
+- Error isolation: Individual video failures don't halt batch processing
+- Detailed summary: Shows success/failure counts with specific error messages
+
+**Performance:**
+- Processing time: ~4 seconds per video (includes 2s throttle delay)
+- Example: 10 video batch = ~40 seconds total
+
+**Limitations:**
+- Sequential processing (no parallelization)
+- Playlist URLs not supported (extract video URLs manually)
+
+**Example (Aggregated Mode):**
+```json
+{
+  "video_urls": [
+    "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+    "https://www.youtube.com/watch?v=9bZkp7q19f0"
+  ],
+  "output_mode": "aggregated",
+  "output_path": "batch-transcripts.md"
+}
 ```
 
-For development with auto-rebuild:
-```bash
-npm run watch
+**Example (Individual Mode):**
+```json
+{
+  "video_urls": [
+    "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+    "https://www.youtube.com/watch?v=9bZkp7q19f0"
+  ],
+  "output_mode": "individual",
+  "output_path": "transcripts/"
+}
 ```
 
-### Testing
+**Aggregated Output Format:**
+```markdown
+# Batch Transcript: 2 videos
+**Created:** 2025-11-09T12:00:00Z
+**Mode:** Aggregated
 
-#### Unit Tests (Fast)
+---
 
-Run unit tests:
-```bash
-npm test
+## Video 1: Rick Astley Never Gonna...
+**Source:** https://www.youtube.com/watch?v=dQw4w9WgXcQ
+**Status:** Success
+
+[Transcript content...]
+
+---
+
+## Video 2: Gangnam Style...
+**Source:** https://www.youtube.com/watch?v=9bZkp7q19f0
+**Status:** Success
+
+[Transcript content...]
 ```
 
-**Memory Usage Tests**: To enable GC control for accurate memory measurements, run tests with the `--expose-gc` flag:
-```bash
-node --expose-gc ./node_modules/.bin/vitest run
+**Individual Output Format:**
+- Creates separate `.md` files in specified directory
+- Filenames: `transcript-{videoId}.md` (e.g., `transcript-dQw4w9WgXcQ.md`)
+- Each file contains single video transcript
+
+**Error Handling:**
+Batch processing continues even if individual videos fail. Response includes detailed summary:
 ```
+Batch processing complete:
+- Total: 5 videos
+- Successful: 4 transcripts
+- Failed: 1 transcript
 
-This allows tests to force garbage collection before memory measurements, ensuring consistent results. Tests will gracefully degrade if `--expose-gc` is not provided.
-
-#### Integration Tests (Slow - requires real YouTube API calls)
-
-Run integration tests:
-```bash
-npm run test:integration
+Failed transcripts:
+✗ https://youtube.com/watch?v=xyz123: Transcripts are disabled for the video
 ```
-
-**Requirements:**
-- Stable internet connection
-- YouTube API accessible (no rate limiting)
-- Execution time: 5-10 minutes (processes real videos)
-
-**Environment Variables:**
-- `RUN_INTEGRATION_TESTS=true` - Enable integration tests (default: skip)
-
-**What Integration Tests Verify:**
-- AC1: 5hr video processing with <100MB peak memory
-- AC2: 6hr video processing with <100MB peak memory
-- AC5: 30min video baseline performance (no regression)
-- AC6: TranscriptsDisabled error handling
-
-**Note:** Integration tests use real YouTube videos and make actual API calls. They are automatically skipped during normal `npm test` runs to keep unit tests fast.
-
 
 ## Request Throttling
 
@@ -172,6 +203,63 @@ Control throttling behavior via environment variables:
 Throttle activity is logged to stderr (preserves MCP stdout protocol):
 - `Throttling: waiting Xms before next request` - Delay applied
 - `Rate limited. Retry N/M after Xms` - Retry in progress
+- `[Batch Progress] Processing video N/M: {url}` - Batch progress updates
+
+## Development
+
+Install dependencies:
+```bash
+npm install
+```
+
+Build the server:
+```bash
+npm run build
+```
+
+For development with auto-rebuild:
+```bash
+npm run watch
+```
+
+### Testing
+
+#### Unit Tests (Fast)
+
+Run unit tests:
+```bash
+npm test
+```
+
+**Memory Usage Tests**: To enable GC control for accurate memory measurements, run tests with the `--expose-gc` flag:
+```bash
+node --expose-gc ./node_modules/.bin/vitest run
+```
+
+This allows tests to force garbage collection before memory measurements, ensuring consistent results. Tests will gracefully degrade if `--expose-gc` is not provided.
+
+#### Integration Tests (Slow - requires real YouTube API calls)
+
+Run integration tests:
+```bash
+npm run test:integration
+```
+
+**Requirements:**
+- Stable internet connection
+- YouTube API accessible (no rate limiting)
+- Execution time: 5-10 minutes (processes real videos)
+
+**Environment Variables:**
+- `RUN_INTEGRATION_TESTS=true` - Enable integration tests (default: skip)
+
+**What Integration Tests Verify:**
+- AC1: 5hr video processing with <100MB peak memory
+- AC2: 6hr video processing with <100MB peak memory
+- AC5: 30min video baseline performance (no regression)
+- AC6: TranscriptsDisabled error handling
+
+**Note:** Integration tests use real YouTube videos and make actual API calls. They are automatically skipped during normal `npm test` runs to keep unit tests fast.
 
 ## Installation
 
