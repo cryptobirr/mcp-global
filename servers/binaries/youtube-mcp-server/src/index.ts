@@ -8,6 +8,7 @@ import {
   McpError,
 } from '@modelcontextprotocol/sdk/types.js';
 import { YoutubeTranscript } from 'youtube-transcript';
+import { RequestThrottler } from './throttle.js';
 import fs from 'fs/promises';
 import { createWriteStream } from 'fs';
 import path from 'path';
@@ -86,6 +87,7 @@ const isValidGetTranscriptArgs = (
   typeof args.output_path === 'string';
 
 class YoutubeMcpServer {
+  private throttler = new RequestThrottler();
   private server: Server;
 
   constructor() {
@@ -186,8 +188,8 @@ class YoutubeMcpServer {
            * - Keeps peak memory <100MB for 60k+ entry transcripts
            */
           console.error(`Fetching transcript for: ${video_url}`);
-          const transcriptEntries = await YoutubeTranscript.fetchTranscript(
-            video_url
+          const transcriptEntries = await this.throttler.throttle(
+            () => YoutubeTranscript.fetchTranscript(video_url)
           );
 
           if (!transcriptEntries || transcriptEntries.length === 0) {

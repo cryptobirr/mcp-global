@@ -81,6 +81,98 @@ npm run test:integration
 
 **Note:** Integration tests use real YouTube videos and make actual API calls. They are automatically skipped during normal `npm test` runs to keep unit tests fast.
 
+
+## Request Throttling
+
+The server implements automatic request throttling to prevent YouTube from rate-limiting or blocking transcript fetch requests during batch operations.
+
+### How It Works
+
+- **Minimum Delay**: Enforces configurable delay between consecutive requests (default: 2 seconds)
+- **Exponential Backoff**: Automatically retries failed requests with increasing delays on rate limit errors (429)
+- **Jitter**: Adds ±20% randomness to delays to prevent synchronized request patterns
+- **Transparent**: All throttling happens automatically - no changes needed to your code
+
+### Configuration
+
+Control throttling behavior via environment variables:
+
+| Variable | Default | Range | Description |
+|----------|---------|-------|-------------|
+| `YOUTUBE_MIN_DELAY` | 2000 | 0-60000 | Minimum milliseconds between requests |
+| `YOUTUBE_MAX_RETRIES` | 3 | 0-10 | Max retry attempts on rate limit |
+| `YOUTUBE_BACKOFF_MULTIPLIER` | 2.0 | 1.0-5.0 | Exponential backoff multiplier |
+| `YOUTUBE_JITTER` | true | true/false | Enable delay randomization |
+
+### Configuration Presets
+
+**Conservative** (recommended for large batches):
+```json
+{
+  "mcpServers": {
+    "youtube-mcp-server": {
+      "command": "/path/to/youtube-mcp-server/build/index.js",
+      "env": {
+        "YOUTUBE_MIN_DELAY": "5000",
+        "YOUTUBE_MAX_RETRIES": "5",
+        "YOUTUBE_BACKOFF_MULTIPLIER": "3"
+      }
+    }
+  }
+}
+```
+
+**Moderate** (default - balanced):
+```json
+{
+  "mcpServers": {
+    "youtube-mcp-server": {
+      "command": "/path/to/youtube-mcp-server/build/index.js"
+    }
+  }
+}
+```
+
+**Aggressive** (faster but higher risk):
+```json
+{
+  "mcpServers": {
+    "youtube-mcp-server": {
+      "command": "/path/to/youtube-mcp-server/build/index.js",
+      "env": {
+        "YOUTUBE_MIN_DELAY": "500",
+        "YOUTUBE_MAX_RETRIES": "2"
+      }
+    }
+  }
+}
+```
+
+### Troubleshooting
+
+**Rate Limit Errors**: If you see "429 Too Many Requests" errors:
+1. Increase `YOUTUBE_MIN_DELAY` to 5000ms or higher
+2. Increase `YOUTUBE_MAX_RETRIES` to 5
+3. Increase `YOUTUBE_BACKOFF_MULTIPLIER` to 3
+
+**Slow Batch Processing**: If batch operations are too slow:
+1. Decrease `YOUTUBE_MIN_DELAY` (minimum 500ms recommended)
+2. Keep `YOUTUBE_MAX_RETRIES` at 2-3
+3. Monitor logs for rate limit warnings
+
+**Disable Throttling** (not recommended):
+```json
+"env": {
+  "YOUTUBE_MIN_DELAY": "0"
+}
+```
+
+### Monitoring
+
+Throttle activity is logged to stderr (preserves MCP stdout protocol):
+- `Throttling: waiting Xms before next request` - Delay applied
+- `Rate limited. Retry N/M after Xms` - Retry in progress
+
 ## Installation
 
 To use with Claude Desktop, add the server config:
