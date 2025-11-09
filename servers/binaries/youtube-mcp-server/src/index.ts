@@ -123,6 +123,15 @@ interface TranscriptResult {
 }
 
 /**
+ * Represents a single transcript entry from YouTube
+ */
+interface TranscriptEntry {
+  text: string;       // Raw transcript text (may contain HTML entities)
+  duration: number;   // Duration of this entry in seconds
+  offset: number;     // Start time offset in seconds
+}
+
+/**
  * Categorized error types for transcript processing
  */
 type ErrorType = 'TranscriptsDisabled' | 'NotFound' | 'RateLimit' | 'Unknown';
@@ -367,7 +376,7 @@ Limitations:
    * @returns Object with title (first 10 words) and filename (first 5 words, sanitized)
    */
   private generateTitleAndFilename(
-    transcriptEntries: any[]
+    transcriptEntries: TranscriptEntry[]
   ): { title: string; filename: string } {
     const firstEntryText = transcriptEntries[0]?.text || '';
 
@@ -418,9 +427,11 @@ Limitations:
    * @param transcriptEntries - Array of transcript entries
    * @param absolutePath - Absolute file path
    * @param title - Video title for file header
+   * @throws {McpError} ENOSPC error if disk full during write
+   * @note Partial files are cleaned up on write failure
    */
   private async streamTranscriptToFile(
-    transcriptEntries: any[],
+    transcriptEntries: TranscriptEntry[],
     absolutePath: string,
     title: string
   ): Promise<void> {

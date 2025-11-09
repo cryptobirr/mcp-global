@@ -1,0 +1,121 @@
+{
+  "issue_number": 3,
+  "title": "[FEATURE] Request throttling to prevent YouTube blocking",
+  "phase": "plan",
+  "status": "completed",
+  "created_at": "2025-11-09T02:24:33Z",
+  "updated_at": "2025-11-09T02:31:05Z",
+  "workflow": {
+    "phase": "plan",
+    "agent": "orchestrate-plan",
+    "started_at": "2025-11-09T02:24:33Z",
+    "completed_at": "2025-11-09T02:31:05Z",
+    "next_phase": "dev-pending",
+    "dod_score": 100,
+    "dod_result": "PASS"
+  },
+  "plan": {
+    "estimated_time_hours": 7,
+    "risk_level": "Low",
+    "complexity": "Medium",
+    "checklist_items_count": 68,
+    "phases": 5,
+    "files_to_create": 3,
+    "files_to_modify": 2,
+    "total_lines_added": 700
+  },
+  "files": {
+    "spec": ".dev/issues/003-feature-request-throttling/01-spec/spec.md",
+    "plan": ".dev/issues/003-feature-request-throttling/03-plan/plan.md",
+    "dod_grade": ".dev/issues/003-feature-request-throttling/03-plan/dod-grade.md",
+    "meta": ".dev/issues/003-feature-request-throttling/03-plan/meta.json"
+  },
+  "acceptance_criteria": {
+    "total": 10,
+    "mapped_to_tests": 10,
+    "coverage_percentage": 100
+  },
+  "test_strategy": {
+    "unit_tests": 11,
+    "integration_tests": 5,
+    "regression_tests": 4,
+    "coverage_target": 90
+  },
+  "architectural_decisions": [
+    {
+      "id": "AD1",
+      "decision": "Singleton vs Instance-per-Request",
+      "chosen": "Singleton RequestThrottler instance",
+      "rationale": "Global state required for throttling across requests"
+    },
+    {
+      "id": "AD2",
+      "decision": "Async Timers vs Blocking Sleep",
+      "chosen": "Promise<void> with setTimeout",
+      "rationale": "Non-blocking, preserves Node.js event loop"
+    },
+    {
+      "id": "AD3",
+      "decision": "Error Detection Strategy",
+      "chosen": "String matching on error messages",
+      "rationale": "Library doesn't expose structured error codes"
+    },
+    {
+      "id": "AD4",
+      "decision": "Configuration Validation",
+      "chosen": "Validate on startup, fallback to defaults",
+      "rationale": "Prevents crashes, provides clear feedback"
+    },
+    {
+      "id": "AD5",
+      "decision": "Jitter Implementation",
+      "chosen": "±20% random variance",
+      "rationale": "Prevents thundering herd, industry standard"
+    }
+  ],
+  "dependencies": {
+    "blocking": [],
+    "related": [
+      {
+        "issue": 1,
+        "title": "Batch processing",
+        "impact": "Throttling enables safe batch operations"
+      },
+      {
+        "issue": 2,
+        "title": "Large transcripts",
+        "impact": "Throttling helps with long fetches"
+      }
+    ]
+  },
+  "open_questions": [
+    {
+      "id": "Q1",
+      "question": "Should we expose throttle metrics via MCP tool?",
+      "status": "deferred",
+      "recommendation": "Defer to future enhancement",
+      "decision": "Use stderr logs for v1"
+    },
+    {
+      "id": "Q2",
+      "question": "Should throttling be configurable per-tool or global?",
+      "status": "decided",
+      "recommendation": "Global throttler",
+      "decision": "Global (only one tool currently)"
+    },
+    {
+      "id": "Q3",
+      "question": "Should we add circuit breaker pattern?",
+      "status": "deferred",
+      "recommendation": "Defer to future",
+      "decision": "Exponential backoff sufficient for v1"
+    }
+  ],
+  "rollout_plan": {
+    "phase_1": "Development & Testing",
+    "phase_2": "Soft Launch (5s delay)",
+    "phase_3": "Production (2s delay)",
+    "phase_4": "Optimization (adaptive throttling)",
+    "rollback": "Set YOUTUBE_MIN_DELAY=0"
+  }
+}

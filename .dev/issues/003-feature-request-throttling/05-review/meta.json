@@ -1,0 +1,33 @@
+{
+  "issue_number": 3,
+  "phase": "review",
+  "status": "complete",
+  "created_at": "2025-11-09T03:59:47Z",
+  "updated_at": "2025-11-09T03:59:47Z",
+  "commit_reviewed": "d20b3e9b5a7fe754bac204cffef0cb2ace4d24f2",
+  "pr_number": null,
+  "review_result": "PASS",
+  "dod_score": 100,
+  "weighted_score": 97.6,
+  "blocking_issues_count": 0,
+  "specialist_scores": {
+    "security": 100,
+    "quality": 95,
+    "performance": 100,
+    "coverage": 95,
+    "documentation": 98
+  },
+  "files_reviewed": [
+    "servers/binaries/youtube-mcp-server/src/throttle.ts",
+    "servers/binaries/youtube-mcp-server/src/index.ts",
+    "servers/binaries/youtube-mcp-server/tests/unit/throttle.test.ts",
+    "servers/binaries/youtube-mcp-server/README.md"
+  ],
+  "review_artifacts": [
+    ".dev/issues/003-feature-request-throttling/05-review/code-review.md",
+    ".dev/issues/003-feature-request-throttling/05-review/dod-grade.md",
+    ".dev/issues/003-feature-request-throttling/05-review/meta.json"
+  ],
+  "next_phase": "merge-ready",
+  "routing_reason": "Review complete - all checks passed (DoD 100%, weighted score 97.6%, zero blocking issues)"
+}
