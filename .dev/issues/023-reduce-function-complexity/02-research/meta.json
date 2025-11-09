@@ -1,0 +1,57 @@
+{
+  "issue_number": 23,
+  "phase": "research",
+  "status": "complete",
+  "result": "PASS",
+  "score": 100,
+  "agent": "code-research",
+  "created_at": "2025-11-09T22:47:01Z",
+  "completed_at": "2025-11-09T22:52:00Z",
+  "spec_file": ".dev/issues/023-reduce-function-complexity/01-spec/spec.md",
+  "research_file": ".dev/issues/023-reduce-function-complexity/02-research/research.md",
+  "dod_grade_file": ".dev/issues/023-reduce-function-complexity/02-research/dod-grade.md",
+  "dod_validation_script": ".dev/issues/023-reduce-function-complexity/02-research/validate-dod.sh",
+  "dod_result": "PASS",
+  "dod_score": 100,
+  "critical_gate": "PASS",
+  "architecture_type": "CLI",
+  "project_type": "Node.js MCP Server",
+  "complexity": "Simple",
+  "feasibility": "High",
+  "approach": "Brownfield",
+  "risk_level": "Low",
+  "similar_patterns_count": 1,
+  "integration_points": [
+    "YouTube Transcript API (youtube-transcript v1.2.1)",
+    "MCP SDK (@modelcontextprotocol/sdk v0.6.0)",
+    "Node.js File System (fs/promises, createWriteStream)"
+  ],
+  "blocking_decisions": 0,
+  "affected_features": 4,
+  "regression_tests_required": 119,
+  "key_patterns": [
+    "Extract-method refactoring (processBatchTranscripts → mode-specific handlers)",
+    "Single responsibility methods (processSingleTranscript pattern)",
+    "Stream-to-file processing (CHUNK_SIZE=1000)",
+    "Error isolation in batch operations",
+    "Throttled API requests (RequestThrottler)"
+  ],
+  "test_infrastructure": "Vitest v4.0.7 with 113 tests (96 unit + 17 security), uses mocks in tests/mocks/",
+  "mock_violations_found": true,
+  "mock_violations_impact": "Does not block refactoring (internal change)",
+  "files_to_modify": [
+    "src/index.ts"
+  ],
+  "files_to_create": [],
+  "estimated_effort_hours": 4,
+  "dependencies": {
+    "existing": [
+      "@modelcontextprotocol/sdk@0.6.0",
+      "youtube-transcript@^1.2.1",
+      "he@^1.2.0"
+    ],
+    "new": []
+  },
+  "next_phase": "plan-pending",
+  "routing_reason": "Research complete with 100% DoD score - proceeding to planning"
+}

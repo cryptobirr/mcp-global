@@ -1,0 +1,42 @@
+{
+  "issue_number": 23,
+  "issue_title": "[CODE-QUALITY] Reduce function complexity (split processBatchTranscripts) - Issue #1",
+  "phase": "spec",
+  "created_at": "2025-11-09T21:31:27Z",
+  "updated_at": "2025-11-09T21:31:27Z",
+  "feature_type": "Backend",
+  "complexity": "Simple",
+  "approach": "Brownfield",
+  "ux_required": false,
+  "tech_stack": {
+    "language": "TypeScript",
+    "framework": "@modelcontextprotocol/sdk",
+    "runtime": "Node.js",
+    "version": "5.x / 0.6.0 / ^20.11.24"
+  },
+  "critical_requirements": [
+    "Extract processIndividualMode() method from processBatchTranscripts()",
+    "Extract processAggregatedMode() method from processBatchTranscripts()",
+    "Reduce processBatchTranscripts() to 2-branch router (orchestration only)",
+    "Maintain 100% backward compatibility (no API changes)",
+    "All 113 tests must pass without modification"
+  ],
+  "open_questions": [],
+  "out_of_scope": [
+    "Changing batch size limits (remains 1-50 videos)",
+    "Adding parallelization",
+    "Modifying throttling behavior",
+    "Changing file output format",
+    "Adding new features",
+    "Modifying error categorization"
+  ],
+  "routing_decision": {
+    "next_phase": "research-pending",
+    "reason": "Backend refactoring - no UX design required, research needed for complexity analysis",
+    "timestamp": "2025-11-09T21:31:27Z"
+  },
+  "artifacts": {
+    "spec_file": ".dev/issues/023-reduce-function-complexity/01-spec/spec.md",
+    "meta_file": ".dev/issues/023-reduce-function-complexity/01-spec/meta.json"
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "issue_number": 25,
+  "phase": "research",
+  "status": "complete",
+  "agent": "code-research",
+  "research_file": ".dev/issues/025-test-gap-edge-cases/02-research/research.md",
+  "complexity": "Simple",
+  "feasibility": "High",
+  "risk_level": "Low",
+  "created": "2025-11-09T23:40:00Z",
+  "completed": "2025-11-09T23:45:00Z"
+}

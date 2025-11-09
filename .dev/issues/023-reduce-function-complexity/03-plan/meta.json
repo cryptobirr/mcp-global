@@ -1,0 +1,32 @@
+{
+  "issue_number": 23,
+  "phase": "plan",
+  "timestamp": "2025-11-09T22:59:00Z",
+  "agent": "code-plan",
+  "version": "1.0.0",
+  "plan_file": "plan.md",
+  "dod_file": "dod-grade.md",
+  "checklist_items": 42,
+  "files_to_modify": 1,
+  "files_to_create": 0,
+  "architectural_decisions": 4,
+  "tests_planned": 6,
+  "estimated_time_hours": 4,
+  "blocking_decisions": 0,
+  "risk_level": "Low",
+  "dependencies": [
+    "validateOutputPath",
+    "this.extractVideoId",
+    "this.processSingleTranscript",
+    "this.normalizeYoutubeUrl",
+    "this.generateTitleAndFilename",
+    "this.categorizeError",
+    "this.throttler.throttle"
+  ],
+  "files": {
+    "to_modify": [
+      "servers/binaries/youtube-mcp-server/src/index.ts"
+    ],
+    "to_create": []
+  }
+}
