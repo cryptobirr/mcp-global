@@ -589,6 +589,205 @@ Limitations:
   }
 
   /**
+   * Processes batch transcripts in individual mode
+   * @param videoUrls - Array of YouTube video URLs
+   * @param outputPath - Directory path for individual files
+   * @returns BatchResult with processing summary
+   */
+  private async processIndividualMode(
+    videoUrls: string[],
+    outputPath: string
+  ): Promise<BatchResult> {
+    const results: TranscriptResult[] = [];
+
+    // Validate directory path
+    validateOutputPath(outputPath);
+    const outputDir = path.resolve(CLINE_CWD, outputPath);
+
+    // Create output directory
+    await fs.mkdir(outputDir, { recursive: true });
+
+    // Process each video sequentially
+    for (let i = 0; i < videoUrls.length; i++) {
+      const url = videoUrls[i];
+
+      // Extract video ID for unique filename
+      const videoId = this.extractVideoId(url);
+      const filename = `transcript-${videoId || Date.now()}-${i}.md`;
+      const filePath = path.join(outputPath, filename);
+
+      console.error(`[Batch Progress] Processing video ${i + 1}/${videoUrls.length}: ${url}`);
+
+      try {
+        const result = await this.processSingleTranscript(url, filePath);
+        results.push(result);
+
+        console.error(
+          `[Batch Progress] Video ${i + 1}/${videoUrls.length}: ${result.success ? 'SUCCESS' : 'FAILED'}`
+        );
+      } catch (error: any) {
+        // Capture error but continue processing
+        results.push({
+          success: false,
+          videoUrl: url,
+          error: error.message || 'Unknown error',
+          errorType: 'Unknown',
+        });
+
+        console.error(`[Batch Progress] Video ${i + 1}/${videoUrls.length}: FAILED`);
+      }
+    }
+
+    return {
+      results,
+      outputPath,
+      mode: 'individual',
+      totalVideos: videoUrls.length,
+      successfulVideos: results.filter(r => r.success).length,
+      failedVideos: results.filter(r => !r.success).length,
+    };
+  }
+
+  /**
+   * Processes batch transcripts in aggregated mode
+   * @param videoUrls - Array of YouTube video URLs
+   * @param outputPath - File path for aggregated output
+   * @returns BatchResult with processing summary
+   */
+  private async processAggregatedMode(
+    videoUrls: string[],
+    outputPath: string
+  ): Promise<BatchResult> {
+    const results: TranscriptResult[] = [];
+
+    // Validate file path
+    validateOutputPath(outputPath);
+    const absolutePath = path.resolve(CLINE_CWD, outputPath);
+    const outputDir = path.dirname(absolutePath);
+
+    // Create output directory
+    await fs.mkdir(outputDir, { recursive: true });
+
+    // Create write stream
+    const writeStream = createWriteStream(absolutePath, { encoding: 'utf-8' });
+
+    // Write header
+    const timestamp = new Date().toISOString();
+    writeStream.write(`# Batch Transcript: ${videoUrls.length} videos\n`);
+    writeStream.write(`**Created:** ${timestamp}\n`);
+    writeStream.write(`**Mode:** Aggregated\n\n`);
+
+    // Process each video sequentially
+    for (let i = 0; i < videoUrls.length; i++) {
+      const url = videoUrls[i];
+
+      console.error(`[Batch Progress] Processing video ${i + 1}/${videoUrls.length}: ${url}`);
+
+      // Write section separator
+      if (i > 0) {
+        writeStream.write(`\n---\n\n`);
+      }
+
+      try {
+        // Normalize URL
+        const normalizedUrl = this.normalizeYoutubeUrl(url);
+
+        // Fetch transcript (with throttling)
+        const transcriptEntries = await this.throttler.throttle(
+          () => YoutubeTranscript.fetchTranscript(normalizedUrl)
+        );
+
+        if (!transcriptEntries || transcriptEntries.length === 0) {
+          // Write failure section
+          writeStream.write(`## Video ${i + 1}: No transcript available\n`);
+          writeStream.write(`**Source:** ${url}\n`);
+          writeStream.write(`**Status:** Failed\n`);
+          writeStream.write(`**Error:** No transcript found or available\n\n`);
+
+          results.push({
+            success: false,
+            videoUrl: url,
+            error: 'No transcript found or available',
+            errorType: 'NotFound',
+          });
+
+          console.error(`[Batch Progress] Video ${i + 1}/${videoUrls.length}: FAILED`);
+          continue;
+        }
+
+        // Generate title
+        const { title } = this.generateTitleAndFilename(transcriptEntries);
+
+        // Write success section header
+        writeStream.write(`## Video ${i + 1}: ${title}\n`);
+        writeStream.write(`**Source:** ${url}\n`);
+        writeStream.write(`**Status:** Success\n\n`);
+
+        // Write transcript content (chunked)
+        const CHUNK_SIZE = 1000;
+        for (let j = 0; j < transcriptEntries.length; j += CHUNK_SIZE) {
+          const chunk = transcriptEntries.slice(j, j + CHUNK_SIZE);
+          const chunkText = chunk
+            .map(entry => {
+              const preDecoded = entry.text
+                .replace(/&#39;/g, "'")
+                .replace(/'/g, "'");
+              return he.decode(preDecoded);
+            })
+            .join(' ');
+
+          writeStream.write(chunkText + ' ');
+        }
+
+        writeStream.write(`\n`);
+
+        results.push({
+          success: true,
+          videoUrl: url,
+          filePath: path.relative(CLINE_CWD, absolutePath),
+          title,
+        });
+
+        console.error(`[Batch Progress] Video ${i + 1}/${videoUrls.length}: SUCCESS`);
+      } catch (error: any) {
+        // Write failure section
+        const { message, type } = this.categorizeError(error, url);
+
+        writeStream.write(`## Video ${i + 1}: Processing failed\n`);
+        writeStream.write(`**Source:** ${url}\n`);
+        writeStream.write(`**Status:** Failed\n`);
+        writeStream.write(`**Error:** ${message}\n\n`);
+
+        results.push({
+          success: false,
+          videoUrl: url,
+          error: message,
+          errorType: type,
+        });
+
+        console.error(`[Batch Progress] Video ${i + 1}/${videoUrls.length}: FAILED`);
+      }
+    }
+
+    // Close stream
+    await new Promise<void>((resolve, reject) => {
+      writeStream.end(() => resolve());
+      writeStream.on('error', reject);
+    });
+
+    console.error(`Aggregated batch transcript saved to: ${absolutePath}`);
+
+    return {
+      results,
+      outputPath,
+      mode: 'aggregated',
+      totalVideos: videoUrls.length,
+      successfulVideos: results.filter(r => r.success).length,
+      failedVideos: results.filter(r => !r.success).length,
+    };
+  }
+
+  /**
    * Processes multiple YouTube transcripts in batch
    * @param videoUrls - Array of YouTube video URLs (1-50)
    * @param outputMode - Output mode: aggregated or individual
@@ -600,175 +799,12 @@ Limitations:
     outputMode: 'aggregated' | 'individual',
     outputPath: string
   ): Promise<BatchResult> {
-    const results: TranscriptResult[] = [];
-
+    // Simple router - delegates to mode-specific handlers
     if (outputMode === 'individual') {
-      // Validate directory path
-      validateOutputPath(outputPath);
-      const outputDir = path.resolve(CLINE_CWD, outputPath);
-
-      // Create output directory
-      await fs.mkdir(outputDir, { recursive: true });
-
-      // Process each video sequentially
-      for (let i = 0; i < videoUrls.length; i++) {
-        const url = videoUrls[i];
-
-        // Extract video ID for unique filename
-        const videoId = this.extractVideoId(url);
-        const filename = `transcript-${videoId || Date.now()}-${i}.md`;
-        const filePath = path.join(outputPath, filename);
-
-        console.error(`[Batch Progress] Processing video ${i + 1}/${videoUrls.length}: ${url}`);
-
-        try {
-          const result = await this.processSingleTranscript(url, filePath);
-          results.push(result);
-
-          console.error(
-            `[Batch Progress] Video ${i + 1}/${videoUrls.length}: ${result.success ? 'SUCCESS' : 'FAILED'}`
-          );
-        } catch (error: any) {
-          // Capture error but continue processing
-          results.push({
-            success: false,
-            videoUrl: url,
-            error: error.message || 'Unknown error',
-            errorType: 'Unknown',
-          });
-
-          console.error(`[Batch Progress] Video ${i + 1}/${videoUrls.length}: FAILED`);
-        }
-      }
+      return this.processIndividualMode(videoUrls, outputPath);
     } else {
-      // Aggregated mode: stream all transcripts to single file
-
-      // Validate file path
-      validateOutputPath(outputPath);
-      const absolutePath = path.resolve(CLINE_CWD, outputPath);
-      const outputDir = path.dirname(absolutePath);
-
-      // Create output directory
-      await fs.mkdir(outputDir, { recursive: true });
-
-      // Create write stream
-      const writeStream = createWriteStream(absolutePath, { encoding: 'utf-8' });
-
-      // Write header
-      const timestamp = new Date().toISOString();
-      writeStream.write(`# Batch Transcript: ${videoUrls.length} videos\n`);
-      writeStream.write(`**Created:** ${timestamp}\n`);
-      writeStream.write(`**Mode:** Aggregated\n\n`);
-
-      // Process each video sequentially
-      for (let i = 0; i < videoUrls.length; i++) {
-        const url = videoUrls[i];
-
-        console.error(`[Batch Progress] Processing video ${i + 1}/${videoUrls.length}: ${url}`);
-
-        // Write section separator
-        if (i > 0) {
-          writeStream.write(`\n---\n\n`);
-        }
-
-        try {
-          // Normalize URL
-          const normalizedUrl = this.normalizeYoutubeUrl(url);
-
-          // Fetch transcript (with throttling)
-          const transcriptEntries = await this.throttler.throttle(
-            () => YoutubeTranscript.fetchTranscript(normalizedUrl)
-          );
-
-          if (!transcriptEntries || transcriptEntries.length === 0) {
-            // Write failure section
-            writeStream.write(`## Video ${i + 1}: No transcript available\n`);
-            writeStream.write(`**Source:** ${url}\n`);
-            writeStream.write(`**Status:** Failed\n`);
-            writeStream.write(`**Error:** No transcript found or available\n\n`);
-
-            results.push({
-              success: false,
-              videoUrl: url,
-              error: 'No transcript found or available',
-              errorType: 'NotFound',
-            });
-
-            console.error(`[Batch Progress] Video ${i + 1}/${videoUrls.length}: FAILED`);
-            continue;
-          }
-
-          // Generate title
-          const { title } = this.generateTitleAndFilename(transcriptEntries);
-
-          // Write success section header
-          writeStream.write(`## Video ${i + 1}: ${title}\n`);
-          writeStream.write(`**Source:** ${url}\n`);
-          writeStream.write(`**Status:** Success\n\n`);
-
-          // Write transcript content (chunked)
-          const CHUNK_SIZE = 1000;
-          for (let j = 0; j < transcriptEntries.length; j += CHUNK_SIZE) {
-            const chunk = transcriptEntries.slice(j, j + CHUNK_SIZE);
-            const chunkText = chunk
-              .map(entry => {
-                const preDecoded = entry.text
-                  .replace(/&#39;/g, "'")
-                  .replace(/'/g, "'");
-                return he.decode(preDecoded);
-              })
-              .join(' ');
-
-            writeStream.write(chunkText + ' ');
-          }
-
-          writeStream.write(`\n`);
-
-          results.push({
-            success: true,
-            videoUrl: url,
-            filePath: path.relative(CLINE_CWD, absolutePath),
-            title,
-          });
-
-          console.error(`[Batch Progress] Video ${i + 1}/${videoUrls.length}: SUCCESS`);
-        } catch (error: any) {
-          // Write failure section
-          const { message, type } = this.categorizeError(error, url);
-
-          writeStream.write(`## Video ${i + 1}: Processing failed\n`);
-          writeStream.write(`**Source:** ${url}\n`);
-          writeStream.write(`**Status:** Failed\n`);
-          writeStream.write(`**Error:** ${message}\n\n`);
-
-          results.push({
-            success: false,
-            videoUrl: url,
-            error: message,
-            errorType: type,
-          });
-
-          console.error(`[Batch Progress] Video ${i + 1}/${videoUrls.length}: FAILED`);
-        }
-      }
-
-      // Close stream
-      await new Promise<void>((resolve, reject) => {
-        writeStream.end(() => resolve());
-        writeStream.on('error', reject);
-      });
-
-      console.error(`Aggregated batch transcript saved to: ${absolutePath}`);
+      return this.processAggregatedMode(videoUrls, outputPath);
     }
-
-    return {
-      results,
-      outputPath,
-      mode: outputMode,
-      totalVideos: videoUrls.length,
-      successfulVideos: results.filter(r => r.success).length,
-      failedVideos: results.filter(r => !r.success).length,
-    };
   }
 
   /**
