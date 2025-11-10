@@ -113,6 +113,226 @@ Failed transcripts:
 ✗ https://youtube.com/watch?v=xyz123: Transcripts are disabled for the video
 ```
 
+## Edge Cases
+
+### Batch Processing Edge Cases
+
+The `batch_get_transcripts` tool handles various edge cases gracefully:
+
+#### 1. Empty Video URL Array
+**Behavior:** Returns error immediately without processing
+```json
+{
+  "video_urls": [],
+  "output_mode": "aggregated",
+  "output_path": "transcripts.md"
+}
+```
+**Result:** Error: "video_urls array cannot be empty"
+
+#### 2. Single Video Batch
+**Behavior:** Processes single video using batch logic
+```json
+{
+  "video_urls": ["https://youtube.com/watch?v=ABC123"],
+  "output_mode": "aggregated",
+  "output_path": "single.md"
+}
+```
+**Result:** Creates aggregated file with single transcript section
+
+#### 3. Maximum Batch Size (50 videos)
+**Behavior:** Processes all 50 videos with throttling
+```json
+{
+  "video_urls": ["url1", "url2", ..., "url50"],
+  "output_mode": "individual",
+  "output_path": "transcripts/"
+}
+```
+**Result:**
+- Processing time: ~200 seconds (3.3 minutes)
+- Each video throttled by 2s default delay
+- All transcripts saved as separate files
+
+#### 4. Exceeding Maximum Batch Size
+**Behavior:** Returns error for arrays > 50 videos
+```json
+{
+  "video_urls": ["url1", "url2", ..., "url51"],
+  "output_mode": "aggregated",
+  "output_path": "transcripts.md"
+}
+```
+**Result:** Error: "Maximum batch size is 50 videos"
+
+#### 5. Mixed Success and Failure
+**Behavior:** Successful transcripts are saved, failed ones are logged
+```json
+{
+  "video_urls": [
+    "https://youtube.com/watch?v=VALID1",
+    "https://youtube.com/watch?v=INVALID",
+    "https://youtube.com/watch?v=VALID2"
+  ],
+  "output_mode": "aggregated",
+  "output_path": "mixed.md"
+}
+```
+**Result:**
+```
+Batch processing complete:
+- Total: 3 videos
+- Successful: 2 transcripts
+- Failed: 1 transcript
+
+Failed transcripts:
+✗ https://youtube.com/watch?v=INVALID: Transcripts are disabled
+```
+**File Content:** Contains 2 successful transcript sections
+
+#### 6. All Videos Fail
+**Behavior:** Creates empty aggregated file or no files in individual mode
+```json
+{
+  "video_urls": [
+    "https://youtube.com/watch?v=DISABLED1",
+    "https://youtube.com/watch?v=DISABLED2"
+  ],
+  "output_mode": "aggregated",
+  "output_path": "all-failed.md"
+}
+```
+**Result:**
+- Aggregated mode: Creates file with header but no transcript sections
+- Individual mode: No transcript files created, only directory
+
+#### 7. Non-Existent Directory (Individual Mode)
+**Behavior:** Automatically creates missing directories
+```json
+{
+  "video_urls": ["https://youtube.com/watch?v=ABC123"],
+  "output_mode": "individual",
+  "output_path": "/path/that/does/not/exist/"
+}
+```
+**Result:** Creates full directory path and saves transcript
+
+#### 8. Existing Files (Overwrite Scenario)
+**Behavior:** Overwrites existing files without warning
+```json
+{
+  "video_urls": ["https://youtube.com/watch?v=ABC123"],
+  "output_mode": "individual",
+  "output_path": "transcripts/"
+}
+```
+**Result:**
+- If `transcript-ABC123.txt` exists, it will be overwritten
+- No backup of previous file is created
+
+#### 9. Invalid Output Mode
+**Behavior:** Returns error for unrecognized modes
+```json
+{
+  "video_urls": ["https://youtube.com/watch?v=ABC123"],
+  "output_mode": "combined",
+  "output_path": "transcripts.md"
+}
+```
+**Result:** Error: "Invalid output_mode. Must be 'aggregated' or 'individual'"
+
+#### 10. Duplicate Video URLs
+**Behavior:** Processes each URL independently (creates duplicates)
+```json
+{
+  "video_urls": [
+    "https://youtube.com/watch?v=ABC123",
+    "https://youtube.com/watch?v=ABC123"
+  ],
+  "output_mode": "aggregated",
+  "output_path": "duplicates.md"
+}
+```
+**Result:**
+- Aggregated mode: Two identical transcript sections in same file
+- Individual mode: File overwritten by second request (same filename)
+
+#### 11. Rate Limiting During Batch
+**Behavior:** Automatic exponential backoff retry
+**Scenario:** YouTube returns 429 (Too Many Requests)
+**Result:**
+```
+Rate limited. Retry 1/3 after 2000ms
+Rate limited. Retry 2/3 after 4000ms
+Rate limited. Retry 3/3 after 8000ms
+```
+- After max retries: Video marked as failed
+- Batch continues with remaining videos
+
+#### 12. Invalid/Malformed URLs
+**Behavior:** Categorized as error, batch continues
+```json
+{
+  "video_urls": [
+    "https://youtube.com/watch?v=VALID123",
+    "not-a-valid-url",
+    "https://youtube.com/watch?v=VALID456"
+  ],
+  "output_mode": "aggregated",
+  "output_path": "transcripts.md"
+}
+```
+**Result:**
+```
+Batch processing complete:
+- Total: 3 videos
+- Successful: 2 transcripts
+- Failed: 1 transcript
+
+Failed transcripts:
+✗ not-a-valid-url: Invalid YouTube URL format
+```
+
+### Single Transcript Edge Cases
+
+#### 1. Path Traversal Attempt
+**Behavior:** Sanitizes paths to prevent directory traversal attacks
+```json
+{
+  "video_url": "https://youtube.com/watch?v=ABC123",
+  "output_path": "../../etc/passwd"
+}
+```
+**Result:** Error: "Invalid output path: directory traversal not allowed"
+
+#### 2. Missing Parent Directory
+**Behavior:** Creates parent directories automatically
+```json
+{
+  "video_url": "https://youtube.com/watch?v=ABC123",
+  "output_path": "/new/nested/dirs/transcript.txt"
+}
+```
+**Result:** Creates `/new/nested/dirs/` and saves `transcript.txt`
+
+#### 3. Transcripts Disabled
+**Behavior:** Returns specific error message
+```json
+{
+  "video_url": "https://youtube.com/watch?v=DISABLED"
+}
+```
+**Result:** Error: "Transcripts are disabled for this video"
+
+#### 4. Very Long Video (6+ hours)
+**Behavior:** Streaming prevents memory overflow
+**Scenario:** Video length: 6 hours 13 minutes
+**Result:**
+- Peak memory: <100MB
+- Processing time: ~4 seconds
+- File size: Depends on speech density (typically 1-2MB per hour)
+
 ## Request Throttling
 
 The server implements automatic request throttling to prevent YouTube from rate-limiting or blocking transcript fetch requests during batch operations.
