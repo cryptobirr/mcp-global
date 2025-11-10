@@ -452,27 +452,21 @@ describe('YoutubeMcpServer - Real Implementation', () => {
     });
 
     describe('Disk Full Error', () => {
-      it('should handle disk full when processSingleTranscript fails with ENOSPC', async () => {
+      it('should handle disk full during directory creation', async () => {
         // Create realistic ENOSPC error
-        const diskError = new Error('ENOSPC: no space left on device, write');
+        const diskError = new Error('ENOSPC: no space left on device');
         (diskError as any).code = 'ENOSPC';
 
-        // Mock processSingleTranscript to throw disk error
-        vi.spyOn(server as any, 'processSingleTranscript')
-          .mockRejectedValue(diskError);
+        // Mock mkdir to throw disk full error
+        const fsMock = await import('fs/promises');
+        vi.spyOn(fsMock, 'mkdir').mockRejectedValue(diskError);
 
         const videoUrls = ['https://www.youtube.com/watch?v=test'];
 
-        const result = await (server as any).processIndividualMode(
-          videoUrls,
-          'test-output'
-        );
-
-        // Verify disk error was caught and added to results
-        expect(result.failedVideos).toBe(1);
-        expect(result.successfulVideos).toBe(0);
-        expect(result.results[0].success).toBe(false);
-        expect(result.results[0].error).toContain('ENOSPC');
+        // Expect processIndividualMode to throw due to mkdir failure
+        await expect(
+          (server as any).processIndividualMode(videoUrls, 'test-output')
+        ).rejects.toThrow('ENOSPC');
       });
 
       it('should categorize disk errors properly', async () => {
@@ -510,3 +504,4 @@ describe('YoutubeMcpServer - Real Implementation', () => {
       });
     });
   });
+});

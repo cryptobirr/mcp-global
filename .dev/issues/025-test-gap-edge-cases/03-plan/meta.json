@@ -1,0 +1,11 @@
+{
+  "issue_number": 25,
+  "phase": "plan",
+  "status": "complete",
+  "agent": "code-plan",
+  "plan_file": ".dev/issues/025-test-gap-edge-cases/03-plan/plan.md",
+  "task_count": 34,
+  "estimated_hours": 4,
+  "created": "2025-11-09T23:46:00Z",
+  "completed": "2025-11-09T23:48:00Z"
+}

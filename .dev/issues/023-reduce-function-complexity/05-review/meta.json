@@ -1,0 +1,22 @@
+{
+  "issue_number": 23,
+  "phase": "review",
+  "timestamp": "2025-11-09T23:07:00Z",
+  "agent": "code-pr-reviewer",
+  "version": "1.0.0",
+  "pr_number": 27,
+  "review_file": "review.md",
+  "dod_file": "dod-grade.md",
+  "specialist_scores": {
+    "security": 100,
+    "quality": 98,
+    "performance": 100,
+    "coverage": 97,
+    "documentation": 98
+  },
+  "weighted_score": 98.7,
+  "blocking_issues": 0,
+  "advisory_issues": 3,
+  "overall_recommendation": "APPROVE",
+  "merge_ready": true
+}

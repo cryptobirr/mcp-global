@@ -1,0 +1,15 @@
+{
+  "issue_number": 25,
+  "issue_title": "[TEST-GAP] Add missing edge case tests - Issue #1",
+  "phase": "spec",
+  "status": "in-review",
+  "agent": "code-spec",
+  "spec_file": ".dev/issues/025-test-gap-edge-cases/01-spec/spec.md",
+  "feature_type": "Testing",
+  "complexity": "Simple",
+  "approach": "Brownfield",
+  "ux_required": false,
+  "created": "2025-11-09T23:24:48Z",
+  "updated": "2025-11-09T23:35:00Z",
+  "routing_decision": "pending_dod_validation"
+}

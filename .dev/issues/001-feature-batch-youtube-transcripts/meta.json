@@ -1,0 +1,44 @@
+{
+  "issue_number": 1,
+  "title": "[FEATURE] Batch process multiple YouTube transcripts",
+  "phase": "plan",
+  "status": "complete",
+  "created": "2025-11-09T16:41:53Z",
+  "updated": "2025-11-09T16:58:45Z",
+  "feature_type": "Backend",
+  "complexity": "Moderate",
+  "approach": "Brownfield",
+  "ux_required": false,
+  "dependencies": [
+    {
+      "issue": 3,
+      "type": "required",
+      "description": "Request throttling to prevent YouTube blocking during batch operations"
+    }
+  ],
+  "spec": {
+    "file": ".dev/issues/001-feature-batch-youtube-transcripts/01-spec/spec.md",
+    "created": "2025-11-09T16:41:53Z",
+    "dod_score": 100,
+    "status": "approved"
+  },
+  "research": {
+    "file": ".dev/issues/001-feature-batch-youtube-transcripts/02-research/research.md",
+    "created": "2025-11-09T16:50:28Z",
+    "dod_score": 100,
+    "status": "complete"
+  },
+  "plan": {
+    "file": ".dev/issues/001-feature-batch-youtube-transcripts/03-plan/plan.md",
+    "created": "2025-11-09T16:58:45Z",
+    "dod_score": 110,
+    "status": "approved",
+    "implementation_phases": 5,
+    "estimated_hours": "26-38",
+    "risk_level": "Low-Medium",
+    "files_to_modify": 1,
+    "files_to_create": 2,
+    "test_files_to_create": 2,
+    "backward_compatible": true
+  }
+}
