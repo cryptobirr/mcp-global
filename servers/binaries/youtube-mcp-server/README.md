@@ -261,6 +261,76 @@ npm run test:integration
 
 **Note:** Integration tests use real YouTube videos and make actual API calls. They are automatically skipped during normal `npm test` runs to keep unit tests fast.
 
+
+## Environment Variables
+
+### YOUTUBE_TRANSCRIPT_DIR
+
+**Optional** - Customize the storage location for transcripts.
+
+**Default**: `~/.youtube-transcripts/`
+
+**Examples**:
+
+```bash
+# macOS/Linux
+export YOUTUBE_TRANSCRIPT_DIR="$HOME/Documents/youtube-transcripts"
+
+# Windows (PowerShell)
+$env:YOUTUBE_TRANSCRIPT_DIR = "$env:USERPROFILE\Documents\youtube-transcripts"
+
+# Docker
+environment:
+  - YOUTUBE_TRANSCRIPT_DIR=/data/transcripts
+```
+
+
+
+## Migration Guide (v1.0.0 → v1.1.0)
+
+### What Changed?
+
+**v1.0.0** (Old Behavior):
+- Required `output_path` parameter for every call
+- Filename based on first 5 words of transcript
+- Used `.md` extension
+
+**v1.1.0** (New Behavior):
+- `output_path` parameter optional (deprecated)
+- Filename format: `{video_id}_{unix_timestamp}.txt`
+- Default storage: `~/.youtube-transcripts/`
+- Customizable via `YOUTUBE_TRANSCRIPT_DIR` environment variable
+
+### How to Migrate
+
+**Before (v1.0.0)**:
+```json
+{
+  "video_url": "https://youtube.com/watch?v=ABC123",
+  "output_path": "~/Documents/transcripts/my-file.md"
+}
+```
+
+**After (v1.1.0+)**:
+```bash
+# Set environment variable once (in ~/.bashrc or ~/.zshrc)
+export YOUTUBE_TRANSCRIPT_DIR="$HOME/Documents/transcripts"
+```
+
+```json
+{
+  "video_url": "https://youtube.com/watch?v=ABC123"
+  // Saves to: ~/Documents/transcripts/ABC123_1699123456.txt
+}
+```
+
+### Benefits
+- ✅ Set storage location once (not per call)
+- ✅ Unique filenames (no collisions)
+- ✅ Find transcripts by video ID: `ls ~/.youtube-transcripts/ABC123_*`
+- ✅ Chronological sorting: `ls -lt ~/.youtube-transcripts/`
+
+
 ## Installation
 
 To use with Claude Desktop, add the server config:
