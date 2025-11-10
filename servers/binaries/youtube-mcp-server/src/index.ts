@@ -13,6 +13,7 @@ import fs from 'fs/promises';
 import { createWriteStream } from 'fs';
 import path from 'path';
 import he from 'he';
+import os from 'os';
 
 const CLINE_CWD = process.cwd();
 
@@ -80,11 +81,11 @@ function validateOutputPath(outputPath: string): void {
 // Helper function to validate arguments for the single transcript tool
 const isValidGetTranscriptArgs = (
   args: any
-): args is { video_url: string; output_path: string } =>
+): args is { video_url: string; output_path?: string } =>
   typeof args === 'object' &&
   args !== null &&
   typeof args.video_url === 'string' &&
-  typeof args.output_path === 'string';
+  (args.output_path === undefined || typeof args.output_path === 'string');
 
 /**
  * Arguments for batch_get_transcripts tool
@@ -182,21 +183,21 @@ class YoutubeMcpServer {
         {
           name: 'get_transcript_and_save',
           description:
-            'Fetches the transcript for a YouTube video and saves it as a Markdown file.',
+            'Fetches the transcript for a YouTube video and saves it to standardized location (~/.youtube-transcripts/)',
           inputSchema: {
             type: 'object',
             properties: {
               video_url: {
                 type: 'string',
-                description: 'The full URL of the YouTube video.',
+                description: 'The full URL of the YouTube video (supports watch, shorts, youtu.be, embed formats)',
               },
               output_path: {
                 type: 'string',
                 description:
-                  'The local file path where the Markdown transcript should be saved (e.g., transcripts/video_title.md).',
+                  'DEPRECATED - Custom output path (use YOUTUBE_TRANSCRIPT_DIR environment variable to set storage location)',
               },
             },
-            required: ['video_url', 'output_path'],
+            required: ['video_url'],
           },
         },
         {
@@ -367,7 +368,23 @@ Limitations:
       return shortMatch[1];
     }
 
+    // Embed URL: youtube.com/embed/VIDEO_ID
+    const embedMatch = url.match(/\/embed\/([a-zA-Z0-9_-]+)/);
+    if (embedMatch && embedMatch[1]) {
+      return embedMatch[1];
+    }
+
     return null;
+  }
+
+  /**
+   * Gets the directory for storing transcripts
+   * Priority: YOUTUBE_TRANSCRIPT_DIR env var > default ~/.youtube-transcripts
+   */
+  private getTranscriptDir(): string {
+    const homeDir = process.env.HOME || process.env.USERPROFILE || os.homedir();
+    const defaultDir = path.join(homeDir, '.youtube-transcripts');
+    return process.env.YOUTUBE_TRANSCRIPT_DIR || defaultDir;
   }
 
   /**
@@ -537,7 +554,7 @@ Limitations:
    */
   private async processSingleTranscript(
     videoUrl: string,
-    outputPath: string
+    outputPath?: string
   ): Promise<TranscriptResult> {
     try {
       // 1. Normalize URL (Shorts → standard)
@@ -559,12 +576,73 @@ Limitations:
         };
       }
 
-      // 4. Generate title and filename
-      const { title, filename } = this.generateTitleAndFilename(transcriptEntries);
+      // 4-5. Generate path and filename (conditional: old vs new behavior)
+      let absolutePath: string;
+      let title: string;
 
-      // 5. Validate and construct absolute path
-      validateOutputPath(outputPath);
-      const absolutePath = this.constructOutputPath(outputPath, filename);
+      if (outputPath) {
+        // ═══════════════════════════════════════════════════════════
+        // OLD BEHAVIOR (Backward Compatibility)
+        // ═══════════════════════════════════════════════════════════
+        console.warn(
+          'Warning: The output_path parameter is deprecated and will be removed in v2.0.0. ' +
+          'Use the YOUTUBE_TRANSCRIPT_DIR environment variable to set a custom storage location.'
+        );
+
+        // Generate title and content-based filename
+        const filenameResult = this.generateTitleAndFilename(transcriptEntries);
+        title = filenameResult.title;
+
+        // Use provided output path (old behavior)
+        validateOutputPath(outputPath);
+        absolutePath = this.constructOutputPath(outputPath, filenameResult.filename);
+        const outputDir = path.dirname(absolutePath);
+        await fs.mkdir(outputDir, { recursive: true });
+
+      } else {
+        // ═══════════════════════════════════════════════════════════
+        // NEW BEHAVIOR (Standardized Storage)
+        // ═══════════════════════════════════════════════════════════
+
+        // Extract video ID from URL
+        const videoId = this.extractVideoId(videoUrl);
+        if (!videoId) {
+          throw new Error(
+            `Cannot extract video ID from URL: ${videoUrl}\n` +
+            'Supported formats:\n' +
+            '  - youtube.com/watch?v=VIDEO_ID\n' +
+            '  - youtu.be/VIDEO_ID\n' +
+            '  - youtube.com/shorts/VIDEO_ID\n' +
+            '  - youtube.com/embed/VIDEO_ID'
+          );
+        }
+
+        // Validate video ID length (YouTube IDs are always 11 characters)
+        if (videoId.length !== 11) {
+          throw new Error(
+            `Invalid video ID extracted: ${videoId} (expected 11 characters, got ${videoId.length})`
+          );
+        }
+
+        // Generate Unix timestamp (seconds, not milliseconds)
+        const timestamp = Math.floor(Date.now() / 1000);
+
+        // Create standardized filename: {video_id}_{timestamp}.txt
+        const filename = `${videoId}_${timestamp}.txt`;
+
+        // Get transcript directory (env var or default)
+        const transcriptDir = this.getTranscriptDir();
+
+        // Ensure directory exists
+        await fs.mkdir(transcriptDir, { recursive: true });
+
+        // Construct absolute path
+        absolutePath = path.join(transcriptDir, filename);
+
+        // Extract title from transcript for content (header line)
+        const filenameResult = this.generateTitleAndFilename(transcriptEntries);
+        title = filenameResult.title;
+      }
 
       // 6. Stream transcript to file
       await this.streamTranscriptToFile(transcriptEntries, absolutePath, title);
